@@ -1,0 +1,737 @@
+{% extends "base.html" %}
+
+{% block title %}Results for {{ service_type }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+  <style>
+    :root {
+      --primary: #6c63ff;
+      --primary-light: #8b85ff;
+      --primary-dark: #4e46e5;
+      --secondary: #ff6584;
+      --accent: #ffc107;
+      --text-dark: #333;
+      --text-light: #666;
+      --white: #fff;
+      --gray-light: #f8f9fa;
+      --gray: #e9ecef;
+      --gray-dark: #dee2e6;
+      --success: #28a745;
+      --danger: #dc3545;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --animation-speed: 0.3s;
+      --border-radius: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-dark);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header1 {
+      padding: 1.5rem 2rem;
+      position: relative;
+      z-index: 10;
+      margin-bottom: 1.5rem;
+      background: transparent;
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+
+    .header1-contents {
+  display: flex;
+  justify-content: flex-end;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--primary-dark);
+}
+
+
+    .back-button {
+      background-color: var(--primary);
+      text-decoration: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 50px;
+      font-weight: 500;
+      transition: all var(--animation-speed) ease;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      color: var(--white);
+      border: 2px solid var(--white);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .back-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background-color: var(--white);
+      transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+      z-index: -1;
+    }
+
+    .back-button:hover {
+      color: var(--primary);
+    }
+
+    .back-button:hover::before {
+      left: 0;
+    }
+
+    #map {
+      height: calc(100vh - 120px);
+      width: 100%;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      z-index: 0;
+    }
+
+    .container-fluid {
+      max-width: 100%;
+      margin: 0;
+      padding: 0 0 2rem;
+      flex: 1;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0;
+    }
+
+    .col-lg-7, .col-lg-5 {
+      padding: 0 15px;
+      width: 100%;
+    }
+
+    @media (min-width: 992px) {
+      .col-lg-7 {
+        width: 55%;
+      }
+      .col-lg-5 {
+        width: 41.67%;
+      }
+    }
+
+    .info-section {
+      background-color: var(--white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.4s ease;
+    }
+
+    .info-section:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .scrollable-results {
+      max-height: calc(100vh - 250px);
+      overflow-y: auto;
+      padding-right: 5px;
+      scrollbar-width: thin;
+    }
+
+    .scrollable-results::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .scrollable-results::-webkit-scrollbar-track {
+      background: var(--gray-light);
+      border-radius: 10px;
+    }
+
+    .scrollable-results::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 10px;
+    }
+
+    .result-card {
+      background-color: var(--white);
+      border-radius: var(--border-radius);
+      margin-bottom: 1.3rem;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+      border: none;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+      position: relative;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .result-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .result-card:hover {
+      transform: translateY(-10px) rotateX(5deg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .result-card .card-body {
+      padding: 1.5rem;
+    }
+
+    .result-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+      font-size: 1.2rem;
+    }
+
+    .result-info {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .star-rating {
+      color: var(--accent);
+      margin-right: 5px;
+    }
+
+    .review-count {
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
+    .place-type {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      background-color: var(--gray-light);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      margin-right: 5px;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+
+    .place-hours {
+      color: var(--success);
+      font-size: 0.85rem;
+      margin-top: 5px;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 50px;
+      font-weight: 500;
+      transition: all var(--animation-speed) ease;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-sm {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-outline-primary {
+      background-color: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .btn-outline-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background-color: var(--primary-light);
+      transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+      z-index: -1;
+    }
+
+    .btn-outline-primary:hover {
+      color: var(--white);
+    }
+
+    .btn-outline-primary:hover::before {
+      left: 0;
+    }
+
+    .btn-outline-success {
+      background-color: transparent;
+      color: var(--success);
+      border: 2px solid var(--success);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .btn-outline-success::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background-color: var(--success);
+      transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+      z-index: -1;
+    }
+
+    .btn-outline-success:hover {
+      color: var(--white);
+    }
+
+    .btn-outline-success:hover::before {
+      left: 0;
+    }
+
+    .badge {
+      display: inline-block;
+      font-weight: 500;
+      padding: 0.5rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      background-color: var(--primary);
+      color: var(--white);
+    }
+
+    .highlight {
+      background-color: var(--gray-light) !important;
+      /* border-left: 4px solid var(--primary); */
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-light);
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    .no-results i {
+      color: var(--primary-light);
+      margin-bottom: 1rem;
+      font-size: 3rem;
+    }
+
+    .no-results h4 {
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Background Animation */
+    .background-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(108, 99, 255, 0.15);
+      animation: float 25s infinite;
+      transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+    }
+
+    .bubble-1 {
+      width: 300px;
+      height: 300px;
+      left: -150px;
+      top: 10%;
+      animation-delay: 0s;
+    }
+
+    .bubble-2 {
+      width: 250px;
+      height: 250px;
+      right: -100px;
+      top: 40%;
+      background: rgba(255, 101, 132, 0.15);
+      animation-delay: 2s;
+    }
+
+    .bubble-3 {
+      width: 350px;
+      height: 350px;
+      left: 35%;
+      top: 60%;
+      background: rgba(255, 221, 100, 0.1);
+      animation-delay: 4s;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0); }
+      25% { transform: translateY(-20px) rotate(3deg); }
+      50% { transform: translateY(0) rotate(0); }
+      75% { transform: translateY(20px) rotate(-3deg); }
+      100% { transform: translateY(0) rotate(0); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .col-lg-7, .col-lg-5 {
+        width: 100%;
+      }
+      
+      #map {
+        height: 400px;
+        margin-bottom: 1.5rem;
+      }
+      
+      .scrollable-results {
+        max-height: none;
+        overflow-y: visible;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header1 {
+        padding: 1rem;
+      }
+      
+      .container-fluid {
+        padding: 0 1rem 1rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .header1-content {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .back-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Focus styles for keyboard navigation */
+    a:focus, button:focus {
+      outline: 3px solid var(--primary-light);
+      outline-offset: 2px;
+    }
+
+    /* For screen readers */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+
+  <!-- Background Animation -->
+  <div class="background-animation">
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+  </div>
+
+  <div class="header1">
+    <div class="header1-contents">
+      <a href="{{ url_for('services') }}" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Services
+      </a>
+    </div>
+  </div>
+
+  
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Map Column -->
+      <div class="col-lg-7">
+        <div id="map"></div>
+      </div>
+      
+      <!-- Results Cards Column -->
+      <div class="col-lg-5">
+        <div class="info-section">
+          <div class="d-flex" style="display: flex; justify-content: space-between; align-items: center;">
+            <h5 style="margin: 0;"><i class="fas fa-map-marker-alt" style="color: var(--secondary); margin-right: 0.5rem;"></i> Near Your Location</h5>
+            <div id="resultCount" class="badge">
+              {{ results|length }} results found
+            </div>
+          </div>
+        </div>
+        
+        <div class="scrollable-results">
+          {% if results %}
+            {% for result in results %}
+              <div class="result-card" data-lat="{{ result.gps_coordinates.latitude }}" data-lng="{{ result.gps_coordinates.longitude }}">
+                <div class="card-body">
+                  <h5 class="result-title">{{ result.title }}</h5>
+                  
+                  {% if result.type %}
+                  <div style="margin-bottom: 0.8rem;">
+                    <span class="place-type">{{ result.type }}</span>
+                  </div>
+                  {% endif %}
+                  
+                  <div class="result-info" style="margin-bottom: 0.8rem;">
+                    {% if result.rating %}
+                    <div style="margin-bottom: 0.5rem;">
+                      <span class="star-rating">
+                        {% for i in range(result.rating|int) %}
+                          <i class="fas fa-star"></i>
+                        {% endfor %}
+                        {% if result.rating % 1 != 0 %}
+                          <i class="fas fa-star-half-alt"></i>
+                        {% endif %}
+                      </span>
+                      <span>{{ result.rating }}</span>
+                      <span class="review-count">({{ result.reviews }} reviews)</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if result.address %}
+                    <div style="margin-bottom: 0.5rem;">
+                      <i class="fas fa-map-marker-alt" style="margin-right: 0.5rem; color: var(--text-light);"></i>{{ result.address }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if result.phone %}
+                    <div style="margin-bottom: 0.5rem;">
+                      <i class="fas fa-phone" style="margin-right: 0.5rem; color: var(--text-light);"></i>{{ result.phone }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if result.hours %}
+                    <div class="place-hours">
+                      <i class="far fa-clock" style="margin-right: 0.5rem;"></i>{{ result.hours }}
+                    </div>
+                    {% endif %}
+                  </div>
+                  
+                  <div style="margin-top: 1rem;">
+                    {% if result.website %}
+                    <a href="{{ result.website }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                      <i class="fas fa-globe"></i> Website
+                    </a>
+                    {% endif %}
+                    
+                    {% if result.directions %}
+                    <a href="{{ result.directions }}" target="_blank" class="btn btn-sm btn-outline-success" style="margin-left: 0.5rem;">
+                      <i class="fas fa-directions"></i> Directions
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="no-results">
+              <i class="fas fa-search"></i>
+              <h4>No results found</h4>
+              <p>Try adjusting your search or try a different service category.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Initialize the map centered on the user's location
+      var userLat = {{ lat }};
+      var userLng = {{ lng }};
+      
+      // Create map with proper initialization
+      var map = L.map('map', {
+        center: [userLat, userLng],
+        zoom: 13,
+        zoomControl: true
+      });
+
+      // Add OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Add a marker for the user's current location with custom icon
+      var userIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+      
+      var userMarker = L.marker([userLat, userLng], {icon: userIcon}).addTo(map)
+        .bindPopup("<b>Your Location</b>")
+        .openPopup();
+      
+      // Custom icon for result markers
+      var resultIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      // Add markers for each SERP API result
+      var resultMarkers = [];
+      var results = {{ results|tojson }};
+      var bounds = L.latLngBounds();
+      
+      // Add user location to bounds
+      bounds.extend([userLat, userLng]);
+      
+      results.forEach(function(result, index) {
+        if(result.gps_coordinates) {
+          var lat = result.gps_coordinates.latitude;
+          var lng = result.gps_coordinates.longitude;
+          
+          // Add location to bounds
+          bounds.extend([lat, lng]);
+          
+          var marker = L.marker([lat, lng], {icon: resultIcon}).addTo(map);
+          
+          // Create popup content
+          var popupContent = `
+            <div style="width: 200px">
+              <h6 style="margin-bottom: 5px; font-weight: 600;">${result.title}</h6>
+              ${result.rating ? 
+                `<div style="color: #ffc107; margin-bottom: 5px">
+                  ${'★'.repeat(Math.floor(result.rating))}${result.rating % 1 >= 0.5 ? '½' : ''}
+                  <span style="color: #666">(${result.reviews})</span>
+                </div>` : ''}
+              ${result.address ? `<div style="font-size: 0.9rem; margin-bottom: 5px">${result.address}</div>` : ''}
+              ${result.phone ? `<div style="font-size: 0.9rem">${result.phone}</div>` : ''}
+            </div>
+          `;
+          
+          marker.bindPopup(popupContent);
+          resultMarkers.push(marker);
+          
+          // Highlight card when clicking on marker
+          marker.on('click', function() {
+            document.querySelectorAll('.result-card').forEach(card => {
+              card.classList.remove('highlight');
+            });
+            
+            var cards = document.querySelectorAll('.result-card');
+            if (cards[index]) {
+              cards[index].classList.add('highlight');
+              cards[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          });
+        }
+      });
+      
+      // Fit map to bounds if we have results
+      if (results.length > 0) {
+        map.fitBounds(bounds, {
+          padding: [50, 50]
+        });
+      }
+
+      // Make the cards interactive - center map on location when clicked
+      document.querySelectorAll('.result-card').forEach(function(card, index) {
+        card.addEventListener('click', function() {
+          var lat = this.getAttribute('data-lat');
+          var lng = this.getAttribute('data-lng');
+          
+          if(lat && lng) {
+            map.setView([lat, lng], 16);
+            if (resultMarkers[index]) {
+              resultMarkers[index].openPopup();
+            }
+            
+            // Highlight clicked card
+            document.querySelectorAll('.result-card').forEach(c => {
+              c.classList.remove('highlight');
+            });
+            this.classList.add('highlight');
+          }
+        });
+      });
+      
+      // Fix any resize issues
+      setTimeout(function() {
+        map.invalidateSize();
+      }, 100);
+    });
+  </script>
+{% endblock %}

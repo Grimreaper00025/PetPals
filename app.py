@@ -6,8 +6,8 @@ import datetime
 import os
 import uuid
 from werkzeug.utils import secure_filename
+import requests
 from datetime import datetime
-
 from dotenv import load_dotenv
 from google import genai
 
@@ -19,6 +19,7 @@ load_dotenv()
 
 # Access the API key
 api_key = os.getenv("GEMINI_API_KEY")
+SERP_API_KEY = os.getenv("SERP_API_KEY")
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -590,9 +591,44 @@ def delete_pet():
 
 
 
-@app.route('/services')
+@app.route("/services")
 def services():
-    return render_template('services.html')
+    # Expanded list of pet services
+    services_list = [
+        {"name": "Veterinary Care", "icon": "fa-user-md", "description": "Regular vets, emergency hospitals, and specialty veterinarians"},
+        {"name": "Pet Grooming", "icon": "fa-cut", "description": "Full-service groomers, mobile grooming, and self-service wash"},
+        {"name": "Pet Training", "icon": "fa-graduation-cap", "description": "Obedience trainers, behavior specialists, and group classes"},
+        {"name": "Pet Boarding", "icon": "fa-home", "description": "Kennels, pet hotels, in-home sitters, and doggy daycare"},
+        {"name": "Dog Parks", "icon": "fa-tree", "description": "Dog parks, pet-friendly restaurants, cafes, and hotels"},
+        {"name": "Pet Adoption", "icon": "fa-heart", "description": "Shelters, breed-specific rescues, and foster organizations"},
+        {"name": "Pet Transportation", "icon": "fa-car", "description": "Pet taxis, pet-friendly rideshare, and transport services"},
+        {"name": "Pet Specialty Services", "icon": "fa-camera", "description": "Pet photography, massage therapy, and hydrotherapy"}
+    ]
+    return render_template("services.html", services=services_list)
+
+@app.route("/results", methods=["POST"])
+def results():
+    service_type = request.form.get("service_type")
+    lat = request.form.get("lat")
+    lng = request.form.get("lng")
+    # Build location string in the format: @latitude,longitude,15.1z
+    location_str = f"@{lat},{lng},15.1z"
+    
+    # Prepare the SERP API request using the google_maps engine
+    params = {
+        "engine": "google_maps",
+        "q": service_type,
+        "ll": location_str,
+        "type": "search",
+        "api_key": SERP_API_KEY
+    }
+    serp_url = "https://serpapi.com/search"
+    response = requests.get(serp_url, params=params)
+    data = response.json()
+    local_results = data.get("local_results", [])
+    
+    return render_template("results.html", results=local_results, lat=lat, lng=lng, service_type=service_type)
+
 
 @app.route('/community')
 def community():
