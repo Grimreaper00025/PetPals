@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetPals - Your Pet's Best Friend</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+</head>
+<body>
+    <div class="background-animation">
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
+        <div class="bubble bubble-4"></div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="logo">
+                <span class="logo-text">Pet<span class="highlight">Pals</span></span>
+                <i class="fas fa-paw logo-icon"></i>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('login') }}" class="nav-link login-link">Login</a>
+                <a href="{{ url_for('signup') }}" class="nav-link signup-link">Sign Up</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1 class="title">Welcome to <span class="highlight">PetPals</span></h1>
+            <p class="subtitle">One stop platform for all your pet needs</p>
+            
+            <div class="cta">
+                <p class="cta-text">Let's get started! Select your pet below:</p>
+            </div>
+        </section>
+
+        <section class="pet-selection">
+            <div class="pet-grid">
+                <div class="pet-card" data-pet="dog">
+                    <div class="pet-icon">
+                        <i class="fas fa-dog"></i>
+                    </div>
+                    <span class="pet-name">Dog</span>
+                </div>
+                <div class="pet-card" data-pet="cat">
+                    <div class="pet-icon">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <span class="pet-name">Cat</span>
+                </div>
+                <div class="pet-card" data-pet="bird">
+                    <div class="pet-icon">
+                        <i class="fas fa-dove"></i>
+                    </div>
+                    <span class="pet-name">Bird</span>
+                </div>
+                <div class="pet-card" data-pet="fish">
+                    <div class="pet-icon">
+                        <i class="fas fa-fish"></i>
+                    </div>
+                    <span class="pet-name">Fish</span>
+                </div>
+                <div class="pet-card" data-pet="rabbit">
+                    <div class="pet-icon">
+                        <i class="fas fa-carrot"></i>
+                    </div>
+                    <span class="pet-name">Rabbit</span>
+                </div>
+                <div class="pet-card" data-pet="hamster">
+                    <div class="pet-icon">
+                        <i class="fas fa-drumstick-bite"></i>
+                    </div>
+                    <span class="pet-name">Hamster</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 PetPals. All rights reserved.</p>
+    </footer>
+
+    <div class="modal" id="petModal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Awesome! You chose <span id="selectedPet"></span></h2>
+            <p>Let's get to know your pet better.</p>
+            <div class="action-buttons">
+                <button id="continueButton" class="btn primary">Continue</button>
+                <button id="cancelButton" class="btn secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+</body>
+</html>
