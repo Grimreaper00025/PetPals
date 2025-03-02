@@ -80,7 +80,7 @@
                     {{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}
                 </p>
                 <div class="item-action">
-                    <a href="{{ url_for('item', item_id=item._id) }}" class="btn view-details-btn">View Details</a>
+                    <button class="product-detail-button" data-id="{{ item._id }}" style="width: 100%;">Add to Cart</button>
                 </div>
             </div>
         </div>
@@ -108,6 +108,48 @@
     </div>
   </div>
 <script>
+const addToCartButtons = document.querySelectorAll('.product-detail-button');
+
+addToCartButtons.forEach(button => {
+button.addEventListener('click', function() {
+const itemId = this.getAttribute('data-id');
+
+
+    // Create a form data object
+    const formData = new FormData();
+    formData.append('item_id', itemId);
+    
+    // Send AJAX request to add the item to the cart
+    fetch('/add_to_cart', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Item added to cart successfully!');
+            
+            // Update cart count
+            fetch('/api/cart/count')
+                .then(response => response.json())
+                .then(countData => {
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount) {
+                        cartCount.textContent = countData.count;
+                        
+                    }
+                });
+        } else {
+            alert('Failed to add item to cart: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while adding the item to cart.');
+    });
+});
+
+});
     document.querySelector('.filter-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
