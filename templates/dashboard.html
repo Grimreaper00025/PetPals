@@ -1,0 +1,644 @@
+{% extends "base.html" %}
+
+{% block title %}Pet Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- User Profile Section -->
+    <div class="user-profile-card">
+        <div class="user-profile-header">
+            <div class="user-avatar-large">
+                <img src="{{ user.avatar_url|default('https://i.pravatar.cc/150?img=32') }}" alt="{{ user.name }}">
+            </div>
+            <div class="user-profile-info">
+                <h1>{{ user.name }}</h1>
+                <p class="user-email">{{ user.email }}</p>
+                <p class="user-member-since">Member since: {{ user.member_since|default('March 2025') }}</p>
+                {% if user.bio %}
+                <div class="user-bio">
+                <p>{{ user.bio }}</p>
+              </div>
+{% endif %}
+            </div>
+        </div>
+        <div class="user-stats">
+            <div class="stat-item">
+                <span class="stat-value">{{ pets|length }}</span>
+                <span class="stat-label">Pets</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ user.events|length }}</span>
+                <span class="stat-label">Events</span>
+            </div>
+        </div>
+        <div class="user-actions">
+            <a href="{{ url_for('edit_profile') }}" class="btn secondary">Edit Profile</a>
+            <a href="{{ url_for('add_pet') }}" class="btn add-pet-btn">Add New Pet</a>
+        </div>
+    </div>
+
+    <!-- Events Section -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>Upcoming Events</h2>
+            <div class="header-actions">
+                <button id="showCalendarBtn" class="btn-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </button>
+                <button id="createEventBtn" class="btn secondary">Create Event</button>
+            </div>
+        </div>
+
+    
+        
+       
+<!-- Calendar Modal -->
+<div id="calendarModal" class="modal">
+    <div class="modal-content calendar-modal-content">
+        <div class="modal-header">
+            <h2>Calendar</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+              
+              
+        
+        
+        
+        <div class="events-container">
+            {% if user.events %}
+                {% for event in user.events %}
+                <div class="event-card">
+                    <div class="event-icon">
+                        <i class="{{ event.icon }}"></i>
+                    </div>
+                    <div class="event-details">
+                        <h3>{{ event.title }}</h3>
+                        <p class="event-date">{{ event.date }}</p>
+                        <p class="event-description">{{ event.description }}</p>
+                    </div>
+                    <div class="event-actions">
+                        <button class="btn-icon edit-event" data-id="{{ loop.index0 }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete-event" data-id="{{ loop.index0 }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-events">
+                    <p>No upcoming events. Create your first pet care event!</p>
+                    <button id="createEventBtnEmpty" class="btn secondary">Create Event</button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Create Schedule Section -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2>Daily Schedule Generator</h2>
+    </div>
+    
+    <div class="schedule-generator-container">
+        <form id="scheduleForm" class="schedule-form">
+            <div class="form-group">
+                <label for="schedule-date">Date</label>
+                <input type="date" id="schedule-date" name="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="schedule-wake-time">Wake-up Time</label>
+                <input type="time" id="schedule-wake-time" name="wakeTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="schedule-sleep-time">Sleep Time</label>
+                <input type="time" id="schedule-sleep-time" name="sleepTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="schedule-home-times">Times When You're at Home</label>
+                <input type="text" id="schedule-home-times" name="homeTimes" placeholder="e.g. 7:00 AM - 9:00 AM, 6:00 PM - 11:00 PM" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="schedule-outside-times">Times When You're Outside</label>
+                <input type="text" id="schedule-outside-times" name="outsideTimes" placeholder="e.g. 9:00 AM - 6:00 PM" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="schedule-activities">Any special activities planned? (Optional)</label>
+                <textarea id="schedule-activities" name="activities" rows="2"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn submit-btn" id="generateScheduleBtn">Generate Schedule</button>
+            </div>
+        </form>
+        
+        <div class="schedule-result">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>Generating response...</p>
+            </div>
+            <textarea id="scheduleOutput" readonly rows="15"></textarea>
+            <div class="schedule-result">
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p>Generating response...</p>
+                </div>
+                {% if user.last_schedule %}
+                <div class="last-generated">
+                    Last generated: {{ user.last_schedule.generated_at }}
+                </div>
+                {% endif %}
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+    <!-- Pet List Section -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>Your Pets</h2>
+        </div>
+        
+        <div class="pets-container">
+            {% if pets %}
+                {% for pet in pets %}
+                <div class="pet-card">
+                    <div class="pet-image">
+                        <img src="{{ pet.image_url }}" alt="{{ pet.name }}">
+                    </div>
+                    <div class="pet-info">
+                        <h2>{{ pet.name }}</h2>
+                        <p>{{ pet.breed }} ({{ pet.type }})</p>
+                        <p>Age: {{ pet.age }} years</p>
+                        
+                        <div class="pet-schedule">
+                            <div class="schedule-item">
+                                <i class="fas fa-utensils"></i>
+                                <span>Feeding: {{ pet.feeding_schedule }}</span>
+                            </div>
+                            <div class="schedule-item">
+                                <i class="fas fa-syringe"></i>
+                                <span>Next Vaccination: {{ pet.vaccination_date }}</span>
+                            </div>
+                            <div class="schedule-item">
+                                <i class="fas fa-cut"></i>
+                                <span>Grooming: {{ pet.grooming_schedule }}</span>
+                            </div>
+                            {% if pet.type == "Dog" %}
+                            <div class="schedule-item">
+                                <i class="fas fa-walking"></i>
+                                <span>Walks: {{ pet.walking_schedule }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="schedule-item">
+                                <i class="fas fa-bone"></i>
+                                <span>Treats: {{ pet.treat_time }}</span>
+                            </div>
+                        </div>
+                        
+                        <a href="{{ url_for('pet_details', pet_id=pet._id) }}" class="btn view-details-btn">View Details</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-pets">
+                    <p>You don't have any pets yet. Add your first pet to get started!</p>
+                    <a href="{{ url_for('add_pet') }}" class="btn add-pet-btn">Add Pet</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Create Event Modal -->
+<div id="eventModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create New Event</h2>
+            <span class="close-modal-event">&times;</span>
+        </div>
+        <form id="eventForm" action="{{ url_for('add_event') }}" method="post">
+            <input type="hidden" id="event-index" name="event_index" value="-1">
+            <div class="form-group">
+                <label for="event-title">Event Title</label>
+                <input type="text" id="event-title" name="title" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-date">Date</label>
+                <input type="date" id="event-date" name="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-pet">Related Pet (Optional)</label>
+                <select id="event-pet" name="pet_id">
+                    <option value="">Select Pet</option>
+                    {% for pet in pets %}
+                    <option value="{{ pet._id }}">{{ pet.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-icon">Icon</label>
+                <select id="event-icon" name="icon" required>
+                    <option value="fas fa-stethoscope">Vet Visit</option>
+                    <option value="fas fa-cut">Grooming</option>
+                    <option value="fas fa-syringe">Vaccination</option>
+                    <option value="fas fa-walking">Walking</option>
+                    <option value="fas fa-tree">Park Visit</option>
+                    <option value="fas fa-birthday-cake">Birthday</option>
+                    <option value="fas fa-pills">Medication</option>
+                    <option value="fas fa-calendar-check">Checkup</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-description">Description</label>
+                <textarea id="event-description" name="description" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn cancel-btn" id="cancelEvent">Cancel</button>
+                <button type="submit" class="btn submit-btn">Save Event</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal elements
+        
+        const modal = document.getElementById('eventModal');
+        const createEventBtn = document.getElementById('createEventBtn');
+        const createEventBtnEmpty = document.getElementById('createEventBtnEmpty');
+        const closeModal = document.querySelector('.close-modal');
+        const cancelBtn = document.getElementById('cancelEvent');
+        const eventForm = document.getElementById('eventForm');
+        const eventIndexInput = document.getElementById('event-index');
+        const eventTitleInput = document.getElementById('event-title');
+        const eventDateInput = document.getElementById('event-date');
+        const eventPetInput = document.getElementById('event-pet');
+        const eventIconInput = document.getElementById('event-icon');
+        const eventDescInput = document.getElementById('event-description');
+        
+        // Open modal for new event
+        function openModalForNew() {
+            // Reset form
+            eventForm.reset();
+            eventIndexInput.value = "-1";
+            eventForm.action = "{{ url_for('add_event') }}";
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            eventDateInput.value = today;
+            
+            // Show modal
+            modal.classList.add('active');
+        }
+        
+        // Open modal for editing
+        function openModalForEdit(eventData, index) {
+            // Fill form with event data
+            eventIndexInput.value = index;
+            eventTitleInput.value = eventData.title;
+            eventDateInput.value = eventData.date;
+            eventIconInput.value = eventData.icon;
+            eventDescInput.value = eventData.description;
+            
+            if (eventData.pet_id) {
+                eventPetInput.value = eventData.pet_id;
+            } else {
+                eventPetInput.value = "";
+            }
+            
+            // Change form action
+            eventForm.action = "{{ url_for('update_event') }}";
+            
+            // Show modal
+            modal.classList.add('active');
+        }
+        
+        // Close modal
+        function closeModalFunc() {
+            modal.classList.remove('active');
+        }
+        
+        // Event listeners
+        if (createEventBtn) {
+            createEventBtn.addEventListener('click', openModalForNew);
+        }
+        
+        if (createEventBtnEmpty) {
+            createEventBtnEmpty.addEventListener('click', openModalForNew);
+        }
+        
+        if (closeModal) {
+            closeModal.addEventListener('click', closeModalFunc);
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeModalFunc);
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModalFunc();
+            }
+        });
+        
+        // Edit event buttons
+        const editEventBtns = document.querySelectorAll('.edit-event');
+        editEventBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const eventIndex = this.getAttribute('data-id');
+                
+                // Fetch the event data
+                fetch(`/get_event/${eventIndex}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            openModalForEdit(data.event, eventIndex);
+                        } else {
+                            alert('Failed to load event data');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while loading event data');
+                    });
+            });
+        });
+        
+        // Delete event buttons
+        const deleteEventBtns = document.querySelectorAll('.delete-event');
+        deleteEventBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const eventIndex = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to delete this event?')) {
+                    // Send request to delete the event
+                    fetch(`/delete_event/${eventIndex}`, {
+                        method: 'POST'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('Failed to delete event');
+                        }
+                    });
+                }
+            });
+        });
+    });
+    document.querySelector('.close-modal-event').addEventListener('click', function() {
+       document.getElementById('eventModal').classList.remove('active');
+         });
+    document.addEventListener('DOMContentLoaded', function() {
+    // Calendar toggle
+    const calendarBtn = document.getElementById('showCalendarBtn');
+    const calendarView = document.getElementById('calendarView');
+    
+    calendarBtn.addEventListener('click', function() {
+        calendarView.classList.toggle('active');
+        if (calendarView.classList.contains('active')) {
+            calendar.render();
+        }
+    });
+    
+    // Initialize FullCalendar
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth'
+        },
+        events: [
+            {% for event in user.events %}
+            {
+                title: '{{ event.title }}',
+                start: '{{ event.date }}',
+                description: '{{ event.description }}',
+                classNames: ['event-{{ loop.index }}']
+            },
+            {% endfor %}
+        ],
+        eventDidMount: function(info) {
+            // Add tooltips to events
+            info.el.title = info.event.extendedProps.description;
+        },
+        eventClick: function(info) {
+    // Prevent default behavior
+    info.jsEvent.preventDefault();
+    
+    // Format the event date for Google Calendar URL
+    const eventDate = info.event.start;
+    const endDate = info.event.end || new Date(eventDate.getTime() + 3600000); // Default to 1 hour later if no end time
+    
+    // Format dates as YYYYMMDDTHHMMSSZ for Google Calendar
+    const formatDate = (date) => {
+      return date.toISOString().replace(/-|:|\.\d+/g, '');
+    };
+    
+    const startFormatted = formatDate(eventDate);
+    const endFormatted = formatDate(endDate);
+    
+    // Create Google Calendar URL with event details
+    const googleCalendarUrl = `https://calendar.google.com/calendar/u/0/r/eventedit?dates=${startFormatted}/${endFormatted}&text=${encodeURIComponent(info.event.title)}&details=${encodeURIComponent(info.event.extendedProps.description || '')}`;
+    
+    // Open Google Calendar in a new tab
+    window.open(googleCalendarUrl);
+  }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Calendar modal elements
+    const calendarBtn = document.getElementById('showCalendarBtn');
+    const calendarModal = document.getElementById('calendarModal');
+    const closeModalBtn = calendarModal.querySelector('.close-modal');
+    
+    // Initialize FullCalendar
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth'
+        },
+        height: '100%',
+        events: [
+            {% for event in user.events %}
+            {
+                title: '{{ event.title }}',
+                start: '{{ event.date }}',
+                description: '{{ event.description }}',
+                extendedProps: {
+                    icon: '{{ event.icon }}'
+                }
+            },
+            {% endfor %}
+        ],
+        eventDidMount: function(info) {
+            // Add tooltips to events
+            info.el.title = info.event.extendedProps.description;
+        },
+        eventClick: function(info) {
+            // Prevent default behavior
+            info.jsEvent.preventDefault();
+            
+            // Format the event date for Google Calendar URL
+            const eventDate = info.event.start;
+            const endDate = info.event.end || new Date(eventDate.getTime() + 3600000); // Default to 1 hour later if no end time
+            
+            // Format dates as YYYYMMDDTHHMMSSZ for Google Calendar
+            const formatDate = (date) => {
+                return date.toISOString().replace(/-|:|\.\d+/g, '');
+            };
+            
+            const startFormatted = formatDate(eventDate);
+            const endFormatted = formatDate(endDate);
+            
+            // Create Google Calendar URL with event details
+            const googleCalendarUrl = `https://calendar.google.com/calendar/u/0/r/eventedit?dates=${startFormatted}/${endFormatted}&text=${encodeURIComponent(info.event.title)}&details=${encodeURIComponent(info.event.extendedProps.description || '')}`;
+            
+            // Open Google Calendar in a new tab
+            window.open(googleCalendarUrl);
+        }
+    });
+    
+    // Open calendar modal
+    calendarBtn.addEventListener('click', function() {
+        calendarModal.classList.add('active');
+        // Render calendar when modal is opened
+        setTimeout(function() {
+            calendar.render();
+        }, 10);
+    });
+    
+    // Close calendar modal
+    closeModalBtn.addEventListener('click', function() {
+        calendarModal.classList.remove('active');
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === calendarModal) {
+            calendarModal.classList.remove('active');
+        }
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Schedule Generator
+    const scheduleForm = document.getElementById('scheduleForm');
+    const scheduleOutput = document.getElementById('scheduleOutput');
+    const loadingContainer = document.querySelector('.loading-container');
+    
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('schedule-date').value = today;
+    
+    // Set default wake and sleep times
+    document.getElementById('schedule-wake-time').value = '07:00';
+    document.getElementById('schedule-sleep-time').value = '22:00';
+    
+    // Load saved schedule if available
+    {% if user.last_schedule %}
+    scheduleOutput.value = `{{ user.last_schedule.schedule|safe }}`;
+    
+    // Fill form with saved values
+    document.getElementById('schedule-date').value = "{{ user.last_schedule.date }}";
+    document.getElementById('schedule-wake-time').value = "{{ user.last_schedule.wakeTime }}";
+    document.getElementById('schedule-sleep-time').value = "{{ user.last_schedule.sleepTime }}";
+    document.getElementById('schedule-home-times').value = "{{ user.last_schedule.homeTimes }}";
+    document.getElementById('schedule-outside-times').value = "{{ user.last_schedule.outsideTimes }}";
+    document.getElementById('schedule-activities').value = "{{ user.last_schedule.activities }}";
+    {% endif %}
+    
+    if (scheduleForm) {
+        scheduleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading spinner
+            loadingContainer.classList.add('active');
+            scheduleOutput.value = '';
+            
+            // Get form data
+            const formData = new FormData(scheduleForm);
+            const scheduleData = {
+                date: formData.get('date'),
+                wakeTime: formData.get('wakeTime'),
+                sleepTime: formData.get('sleepTime'),
+                homeTimes: formData.get('homeTimes'),
+                outsideTimes: formData.get('outsideTimes'),
+                activities: formData.get('activities'),
+                pets: []
+            };
+            
+            // Get pets data
+            {% for pet in pets %}
+            scheduleData.pets.push({
+                name: "{{ pet.name }}",
+                type: "{{ pet.type }}",
+                breed: "{{ pet.breed }}",
+                age: {{ pet.age }},
+                feeding_schedule: "{{ pet.feeding_schedule }}",
+                walking_schedule: "{{ pet.walking_schedule }}",
+                grooming_schedule: "{{ pet.grooming_schedule }}",
+                treat_time: "{{ pet.treat_time }}"
+            });
+            {% endfor %}
+            
+            // Send request to generate schedule
+            fetch('/generate_schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(scheduleData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading spinner
+                loadingContainer.classList.remove('active');
+                
+                // Display the generated schedule
+                scheduleOutput.value = data.raw_schedule;
+            })
+            .catch(error => {
+                console.error('Error generating schedule:', error);
+                loadingContainer.classList.remove('active');
+                scheduleOutput.value = 'Error generating schedule. Please try again.';
+            });
+        });
+    }
+});
+
+
+
+
+
+
+  
+</script>
+{% endblock %}

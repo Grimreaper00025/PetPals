@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pet.name }} - Details{% endblock %}
+
+{% block content %}
+<div class="pet-detail-container">
+    <div class="pet-detail-header">
+        <div class="pet-detail-image">
+            <img src="{{ pet.image_url }}" alt="{{ pet.name }}">
+        </div>
+        <div class="pet-detail-info">
+            <h1>{{ pet.name }}</h1>
+            <p class="pet-breed">{{ pet.breed }} ({{ pet.type }})</p>
+            <p class="pet-age">Age: {{ pet.age }} years</p>
+        </div>
+    </div>
+    
+    <div class="pet-detail-content">
+        <div class="pet-schedule-card">
+            <h2>Daily Schedule</h2>
+            <div class="schedule-grid">
+                <div class="schedule-item">
+                    <div class="schedule-icon"><i class="fas fa-utensils"></i></div>
+                    <div class="schedule-details">
+                        <h3>Feeding Time</h3>
+                        <p>{{ pet.feeding_schedule }}</p>
+                    </div>
+                </div>
+                
+                <div class="schedule-item">
+                    <div class="schedule-icon"><i class="fas fa-syringe"></i></div>
+                    <div class="schedule-details">
+                        <h3>Next Vaccination</h3>
+                        <p>{{ pet.vaccination_date }}</p>
+                    </div>
+                </div>
+                
+                <div class="schedule-item">
+                    <div class="schedule-icon"><i class="fas fa-cut"></i></div>
+                    <div class="schedule-details">
+                        <h3>Grooming</h3>
+                        <p>{{ pet.grooming_schedule }}</p>
+                    </div>
+                </div>
+                
+                {% if pet.type == "Dog" %}
+                <div class="schedule-item">
+                    <div class="schedule-icon"><i class="fas fa-walking"></i></div>
+                    <div class="schedule-details">
+                        <h3>Walking</h3>
+                        <p>{{ pet.walking_schedule }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="schedule-item">
+                    <div class="schedule-icon"><i class="fas fa-bone"></i></div>
+                    <div class="schedule-details">
+                        <h3>Treat Time</h3>
+                        <p>{{ pet.treat_time }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pet-detail-header">
+            <div class="pet-detail-image">
+                <img src="{{ pet.image_url }}" alt="{{ pet.name }}">
+            </div>
+            <div class="pet-detail-info">
+                <h1>{{ pet.name }}</h1>
+                <p class="pet-breed">{{ pet.breed }} ({{ pet.type }})</p>
+                <p class="pet-age">Age: {{ pet.age }} years</p>
+                
+                <!-- Add these buttons -->
+                <div class="pet-actions">
+                    <a href="{{ url_for('edit_pet', pet_id=pet._id) }}" class="btn edit-pet-btn">
+                        <i class="fas fa-edit"></i> Edit Pet
+                    </a>
+                    <button class="btn delete-pet-btn" data-pet-id="{{ pet._id }}" data-pet-name="{{ pet.name }}">
+                        <i class="fas fa-trash"></i> Delete Pet
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add this modal for delete confirmation -->
+        <div class="delete-modal" id="deleteModal">
+            <div class="delete-modal-content">
+                <h2>Confirm Deletion</h2>
+                <p>Are you sure you want to delete <span id="petNameToDelete"></span>? This action cannot be undone.</p>
+                <div class="delete-modal-actions">
+                    <form action="{{ url_for('delete_pet') }}" method="post" id="deletePetForm">
+                        <input type="hidden" name="pet_id" id="petIdToDelete">
+                        <button type="button" class="btn cancel-delete-btn" id="cancelDelete">Cancel</button>
+                        <button type="submit" class="btn confirm-delete-btn">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const deleteBtn = document.querySelector('.delete-pet-btn');
+                const deleteModal = document.getElementById('deleteModal');
+                const cancelDelete = document.getElementById('cancelDelete');
+                const petNameSpan = document.getElementById('petNameToDelete');
+                const petIdInput = document.getElementById('petIdToDelete');
+                
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', function() {
+                        const petId = this.getAttribute('data-pet-id');
+                        const petName = this.getAttribute('data-pet-name');
+                        
+                        petNameSpan.textContent = petName;
+                        petIdInput.value = petId;
+                        deleteModal.classList.add('active');
+                    });
+                }
+                
+                if (cancelDelete) {
+                    cancelDelete.addEventListener('click', function() {
+                        deleteModal.classList.remove('active');
+                    });
+                }
+                
+                // Close modal when clicking outside
+                window.addEventListener('click', function(e) {
+                    if (e.target === deleteModal) {
+                        deleteModal.classList.remove('active');
+                    }
+                });
+            });
+        </script>
+        
+        
+        <!-- Add this to your pet_details.html template where you want to display the AI-generated content -->
+<div class="pet-ai-content">
+    <div class="pet-fun-facts">
+    <h3>Fun Facts about {{ pet.breed }} {{ pet.type }}s</h3>
+    <textarea class="content-box fun-facts-box" readonly>{{ fun_facts }}</textarea>
+</div>
+
+<div class="pet-care-recommendations">
+    <h3>Care Recommendations</h3>
+    <textarea class="content-box care-recommendations-box"  readonly>{{ care_recommendations }}</textarea>
+</div>
+</div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

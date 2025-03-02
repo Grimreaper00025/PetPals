@@ -1,0 +1,176 @@
+{% extends "base-market.html" %}
+
+{% block title %}Shopping Cart - Pet Marketplace{% endblock %}
+
+{% block content %}
+<h1>Shopping Cart</h1>
+
+{% if items %}
+<div class="cart-container">
+    <div class="cart-items">
+        {% for item in items %}
+        <div class="cart-item-container">
+            <div class="cart-item-image">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+            </div>
+            <div class="cart-item-info">
+                <h2 class="cart-item-title">{{ item.name }}</h2>
+                <p class="cart-item-price">${{ item.price }}</p>
+                <p class="cart-item-description">{{ item.description[:150] }}{% if item.description|length > 150 %}...{% endif %}</p>
+                <div class="cart-item-controls">
+                    <div class="quantity-controls">
+                        <form action="{{ url_for('update_cart') }}" method="post" class="inline-form">
+                            <input type="hidden" name="item_id" value="{{ item._id }}">
+                            <input type="hidden" name="action" value="decrease">
+                            <button type="submit" class="quantity-btn">-</button>
+                        </form>
+                        <span class="quantity">{{ item.quantity }}</span>
+                        <form action="{{ url_for('update_cart') }}" method="post" class="inline-form">
+                            <input type="hidden" name="item_id" value="{{ item._id }}">
+                            <input type="hidden" name="action" value="increase">
+                            <button type="submit" class="quantity-btn">+</button>
+                        </form>
+                    </div>
+                    <p class="item-total">Item Total: ${{ (item.price * item.quantity)|round(2) }}</p>
+                    <form action="{{ url_for('update_cart') }}" method="post">
+                        <input type="hidden" name="item_id" value="{{ item._id }}">
+                        <input type="hidden" name="action" value="remove">
+                        <button type="submit" class="cart-item-button">Remove</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="cart-summary">
+        <div class="cart-total">
+            <h2>Order Summary</h2>
+            <div class="summary-line">
+                <span>Subtotal:</span>
+                <span>${{ total|round(2) }}</span>
+            </div>
+            <div class="summary-line">
+                <span>Shipping:</span>
+                <span>$5.99</span>
+            </div>
+            <div class="summary-line total-line">
+                <span>Total:</span>
+                <span>${{ (total + 5.99)|round(2) }}</span>
+            </div>
+            <a href="{{ url_for('checkout') }}" class="checkout-btn">Proceed to Checkout</a>
+            <a href="{{ url_for('clear_cart') }}" class="clear-cart-btn">Clear Cart</a>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="empty-cart">
+    <h2>Your cart is empty</h2>
+    <p>Looks like you haven't added any items to your cart yet.</p>
+    <a href="{{ url_for('market') }}" class="btn">Continue Shopping</a>
+</div>
+{% endif %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle checkout button
+        const checkoutBtn = document.querySelector('.checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', function(e) {
+                // You can add validation here if needed
+            });
+        }
+        
+        // Handle quantity update buttons
+        const quantityForms = document.querySelectorAll('.quantity-controls form');
+        quantityForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch('/update_cart', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the specific item quantity
+                        const itemContainer = this.closest('.cart-item-container');
+                        const quantitySpan = itemContainer.querySelector('.quantity');
+                        quantitySpan.textContent = data.item_quantity;
+                        
+                        // Update the item total
+                        const itemTotalElement = itemContainer.querySelector('.item-total');
+                        itemTotalElement.textContent = `Item Total: $${data.item_total.toFixed(2)}`;
+                        
+                        // Update the cart summary
+                        document.querySelector('.summary-line:first-child span:last-child').textContent = `$${data.subtotal.toFixed(2)}`;
+                        document.querySelector('.total-line span:last-child').textContent = `$${data.total.toFixed(2)}`;
+                        
+                        // If item was removed (quantity went to 0), remove the container
+                        if (data.item_quantity === 0) {
+                            itemContainer.remove();
+                            
+                            // If no items left, reload to show empty cart
+                            if (data.items_count === 0) {
+                                window.location.reload();
+                            }
+                        }
+                    } else {
+                        console.error('Error updating cart:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        // Handle remove buttons
+        const removeForms = document.querySelectorAll('.cart-item-controls > form:last-child');
+        removeForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch('/update_cart', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the item container
+                        const itemContainer = this.closest('.cart-item-container');
+                        itemContainer.remove();
+                        
+                        // Update the cart summary
+                        document.querySelector('.summary-line:first-child span:last-child').textContent = `$${data.subtotal.toFixed(2)}`;
+                        document.querySelector('.total-line span:last-child').textContent = `$${data.total.toFixed(2)}`;
+                        
+                        // If no items left, reload to show empty cart
+                        if (data.items_count === 0) {
+                            window.location.reload();
+                        }
+                    } else {
+                        console.error('Error removing item:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    });
+</script>
+
+
+{% endblock %}
