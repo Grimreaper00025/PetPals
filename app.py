@@ -862,6 +862,12 @@ def clear_cart():
     cart_collection.delete_many({'user_id': ObjectId(user['_id'])})
     return redirect(url_for('cart'))
 
+@app.route('/item/<item_id>')
+def item(item_id):
+    item = products.find_one({'_id': ObjectId(item_id)})
+    return render_template('item.html', item=item)
+
+
 @app.route('/checkout')
 def checkout():
     user = get_current_user()
