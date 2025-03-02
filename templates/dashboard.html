@@ -3,6 +3,7 @@
 {% block title %}Pet Dashboard{% endblock %}
 
 {% block content %}
+
 <div class="dashboard-container">
     <div class="background-animation">
         <div class="bubble bubble-1"></div>
@@ -27,7 +28,7 @@
                 <div class="user-bio">
                 <p>{{ user.bio }}</p>
               </div>
-{% endif %}
+ {% endif %}
             </div>
         </div>
         <div class="user-stats">
@@ -61,8 +62,8 @@
     
         
        
-<!-- Calendar Modal -->
-<div id="calendarModal" class="modal">
+ <!-- Calendar Modal -->
+ <div id="calendarModal" class="modal">
     <div class="modal-content calendar-modal-content">
         <div class="modal-header">
             <h2>Calendar</h2>
@@ -72,7 +73,7 @@
             <div id="calendar"></div>
         </div>
     </div>
-</div>
+ </div>
         
         <div class="events-container">
             {% if user.events %}
@@ -106,7 +107,7 @@
     </div>
 
     <!-- Create Schedule Section -->
-<div class="dashboard-section">
+ <div class="dashboard-section">
     <div class="section-header">
         <h2>Daily Schedule Generator</h2>
     </div>
@@ -154,21 +155,17 @@
                 <p>Generating response...</p>
             </div>
             <textarea id="scheduleOutput" readonly rows="15"></textarea>
-            <div class="schedule-result">
-                <div class="loading-container">
-                    <div class="loading-spinner"></div>
-                    <p>Generating response...</p>
-                </div>
-                {% if user.last_schedule %}
-                <div class="last-generated">
-                    Last generated: {{ user.last_schedule.generated_at }}
-                </div>
-                {% endif %}
+            <div id="typedOutputContainer" class="typed-content"></div>
+            {% if user.last_schedule %}
+            <div class="last-generated">
+                Last generated: {{ user.last_schedule.generated_at }}
             </div>
+            {% endif %}
+        </div>
             
         </div>
     </div>
-</div>
+ </div>
 
 
     <!-- Pet List Section -->
@@ -226,10 +223,10 @@
             {% endif %}
         </div>
     </div>
-</div>
+ </div>
 
 <!-- Create Event Modal -->
-<div id="eventModal" class="modal">
+ <div id="eventModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h2>Create New Event</h2>
@@ -285,6 +282,45 @@
 </div>
 
 <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to match heights
+    function matchHeights() {
+        const scheduleForm = document.querySelector('.schedule-form');
+        const scheduleResult = document.querySelector('.schedule-result');
+        
+        if (scheduleForm && scheduleResult) {
+            const formHeight = scheduleForm.offsetHeight;
+            scheduleResult.style.height = formHeight + 'px';
+            
+            // Also set the typed content container to fill the available space
+            const typedOutputContainer = document.getElementById('typedOutputContainer');
+            if (typedOutputContainer) {
+                // Calculate height accounting for the "Last generated" text if present
+                const lastGenerated = scheduleResult.querySelector('.last-generated');
+                const lastGeneratedHeight = lastGenerated ? lastGenerated.offsetHeight + 10 : 0;
+                
+                // Set the height of the typed content container
+                typedOutputContainer.style.height = (formHeight - 40 - lastGeneratedHeight) + 'px'; // 40px for padding
+                typedOutputContainer.style.maxHeight = (formHeight - 40 - lastGeneratedHeight) + 'px';
+                typedOutputContainer.style.overflowY = 'auto';
+            }
+        }
+    }
+    
+    // Call initially and whenever window is resized
+    matchHeights();
+    window.addEventListener('resize', matchHeights);
+    
+    // Also call after any content is loaded that might change heights
+    const scheduleForm = document.getElementById('scheduleForm');
+    if (scheduleForm) {
+        scheduleForm.addEventListener('submit', function() {
+            // Wait a moment for the new content to be added
+            setTimeout(matchHeights, 100);
+        });
+    }
+});
     document.addEventListener('DOMContentLoaded', function() {
         // Modal elements
         
@@ -551,13 +587,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-
 document.addEventListener('DOMContentLoaded', function() {
     // Schedule Generator
     const scheduleForm = document.getElementById('scheduleForm');
     const scheduleOutput = document.getElementById('scheduleOutput');
+    const scheduleContainer = document.getElementById('scheduleContainer');
     const loadingContainer = document.querySelector('.loading-container');
+    
+    // Variable to track typing animation
+    let typingInProgress = false;
     
     // Set default date to today
     const today = new Date().toISOString().split('T')[0];
@@ -580,6 +618,169 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('schedule-activities').value = "{{ user.last_schedule.activities }}";
     {% endif %}
     
+    // Function to type out a message character by character
+    // Function to type out text character by character with formatting
+function typeMessage(message, element, speed = 15) {
+    // First, create a hidden div to store the formatted HTML
+    const formattedDiv = document.createElement('div');
+    formattedDiv.style.display = 'none';
+    document.body.appendChild(formattedDiv);
+    
+    // Format the message with proper line breaks and sections
+    let formattedText = '';
+    const lines = message.split('\n');
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Format section headers
+        if (line.startsWith('==') && line.endsWith('==')) {
+            formattedText += `<h3 class="schedule-section-header">${line}</h3>`;
+        } 
+        // Add extra space after schedule items
+        else if (line.match(/^\d+:\d+ [AP]M - /)) {
+            formattedText += `<p class="schedule-item">${line}</p>`;
+        }
+        // Format numbered tips
+        else if (line.match(/^\d+\. /)) {
+            formattedText += `<p class="schedule-tip">${line}</p>`;
+        }
+        // Regular lines
+        else if (line.trim() !== '') {
+            formattedText += `<p>${line}</p>`;
+        }
+        // Empty lines become breaks
+        else {
+            formattedText += '<br>';
+        }
+    }
+    
+    formattedDiv.innerHTML = formattedText;
+    
+    // Now get all the HTML nodes we need to type out
+    const nodes = Array.from(formattedDiv.childNodes);
+    let currentNodeIndex = 0;
+    let currentCharIndex = 0;
+    let typingInProgress = true;
+    
+    // Clear the target element
+    element.innerHTML = '';
+    
+    function typeNextChar() {
+        if (!typingInProgress || currentNodeIndex >= nodes.length) {
+            typingInProgress = false;
+            // Clean up the hidden div
+            document.body.removeChild(formattedDiv);
+            return;
+        }
+        
+        const currentNode = nodes[currentNodeIndex];
+        
+        // If this is a new node, create it in the target element
+        if (currentCharIndex === 0) {
+            const newNode = currentNode.cloneNode(false);
+            element.appendChild(newNode);
+        }
+        
+        // Get the current text content
+        const nodeText = currentNode.textContent;
+        
+        // If we've finished typing this node
+        if (currentCharIndex >= nodeText.length) {
+            currentNodeIndex++;
+            currentCharIndex = 0;
+            setTimeout(typeNextChar, speed);
+            return;
+        }
+        
+        // Add the next character to the current node
+        const currentTargetNode = element.childNodes[currentNodeIndex];
+        currentTargetNode.textContent = nodeText.substring(0, currentCharIndex + 1);
+        currentCharIndex++;
+        
+        // Auto-scroll to follow typing
+        element.scrollTop = element.scrollHeight;
+        
+        // Schedule next character
+        setTimeout(typeNextChar, speed);
+    }
+    
+    // Start typing
+    typeNextChar();
+    
+    // Click to see full text immediately
+    element.addEventListener('click', function() {
+        if (typingInProgress) {
+            typingInProgress = false;
+            element.innerHTML = formattedText;
+            // Clean up the hidden div
+            document.body.removeChild(formattedDiv);
+        }
+    });
+}
+
+    
+    // Helper function to format the schedule with nice styling
+    function formatSchedule(rawSchedule) {
+        // Split the schedule into sections
+        const sections = rawSchedule.split(/==([A-Z]+)==/);
+        let formattedHtml = '';
+        
+        for (let i = 1; i < sections.length; i += 2) {
+            const sectionTitle = sections[i];
+            const sectionContent = sections[i + 1].trim();
+            
+            formattedHtml += `<div class="schedule-section">`;
+            formattedHtml += `<h3 class="schedule-section-title">${sectionTitle}</h3>`;
+            
+            if (sectionTitle === 'SCHEDULE') {
+                // Format schedule items with time highlighting
+                const scheduleItems = sectionContent.split('\n');
+                formattedHtml += `<div class="schedule-items">`;
+                
+                for (const item of scheduleItems) {
+                    if (item.trim() === '') continue;
+                    
+                    // Extract time and activity
+                    const timeSplit = item.split(' - ');
+                    if (timeSplit.length >= 2) {
+                        const time = timeSplit[0].trim();
+                        const activity = timeSplit.slice(1).join(' - ').trim();
+                        
+                        formattedHtml += `
+                            <div class="schedule-item">
+                                <span class="schedule-time">${time}</span>
+                                <span class="schedule-activity">${activity}</span>
+                            </div>
+                        `;
+                    } else {
+                        formattedHtml += `<p>${item}</p>`;
+                    }
+                }
+                
+                formattedHtml += `</div>`;
+            } else if (sectionTitle === 'TIPS') {
+                // Format tips as a list
+                const tips = sectionContent.split('\n');
+                formattedHtml += `<ul class="schedule-tips">`;
+                
+                for (const tip of tips) {
+                    if (tip.trim() === '') continue;
+                    formattedHtml += `<li>${tip.replace(/^\d+\.\s*/, '')}</li>`;
+                }
+                
+                formattedHtml += `</ul>`;
+            } else {
+                // Regular paragraph formatting
+                formattedHtml += `<div class="schedule-content">${sectionContent.replace(/\n/g, '<br>')}</div>`;
+            }
+            
+            formattedHtml += `</div>`;
+        }
+        
+        return formattedHtml;
+    }
+    
     if (scheduleForm) {
         scheduleForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -587,6 +788,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show loading spinner
             loadingContainer.classList.add('active');
             scheduleOutput.value = '';
+            
+            // Create or clear the typed output container
+            let typedOutputContainer = document.getElementById('typedOutputContainer');
+            if (!typedOutputContainer) {
+                typedOutputContainer = document.createElement('div');
+                typedOutputContainer.id = 'typedOutputContainer';
+                typedOutputContainer.className = 'typed-content';
+                scheduleContainer.appendChild(typedOutputContainer);
+            } else {
+                typedOutputContainer.innerHTML = '';
+            }
             
             // Get form data
             const formData = new FormData(scheduleForm);
@@ -627,17 +839,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hide loading spinner
                 loadingContainer.classList.remove('active');
                 
-                // Display the generated schedule
+                // Store the raw schedule in the hidden textarea (for form submission)
                 scheduleOutput.value = data.raw_schedule;
+                
+                // Check if typing animation is requested
+                if (data.type_animation) {
+                    // Show the typed output container
+                    typedOutputContainer.style.display = 'block';
+                    scheduleOutput.style.display = 'none';
+                    
+                    // Type out the message
+                    typeMessage(data.raw_schedule, typedOutputContainer);
+                } else {
+                    // Display the generated schedule without animation
+                    typedOutputContainer.style.display = 'none';
+                    scheduleOutput.style.display = 'block';
+                }
             })
             .catch(error => {
                 console.error('Error generating schedule:', error);
                 loadingContainer.classList.remove('active');
                 scheduleOutput.value = 'Error generating schedule. Please try again.';
+                typedOutputContainer.innerHTML = '<div class="error-message">Error generating schedule. Please try again.</div>';
             });
         });
     }
 });
+
+
+
+
+
 
 </script>
 {% endblock %}

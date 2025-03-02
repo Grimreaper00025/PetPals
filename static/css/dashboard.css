@@ -3035,3 +3035,201 @@ gap: var(--spacing-md);
     display: flex;
     /* align-items: center; */
 }
+
+/* Schedule Result Container */
+.schedule-result {
+    position: relative;
+    margin-top: 30px;
+    background-color: var(--white);
+    border-radius: 15px;
+    box-shadow: var(--shadow-md);
+    padding: 20px;
+    margin-top: 0;
+    max-height: ;
+}
+
+/* Loading Animation */
+.loading-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    z-index: 10;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-container.active {
+    display: flex;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--gray);
+    border-top: 5px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-container p {
+    color: var(--primary);
+    font-weight: 600;
+}
+/* Schedule Result Container */
+.schedule-result {
+  position: relative;
+  margin-top: 30px;
+  background-color: var(--white);
+  border-radius: 15px;
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
+  /* Height will be set by JavaScript to match the form */
+}
+
+/* Schedule Result Container */
+.schedule-result {
+    position: relative;
+    margin-top: 30px;
+    background-color: var(--white);
+    border-radius: 15px;
+    box-shadow: var(--shadow-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    /* Height will be set by JavaScript to match the form */
+}
+
+/* Schedule Output Textarea */
+/* Schedule Result Container */
+.schedule-result {
+  position: relative;
+  margin-top: 30px;
+  background-color: var(--white);
+  border-radius: 15px;
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0%;
+  /* Height will be set by JavaScript to match the form */
+}
+
+/* Schedule Output Textarea */
+#scheduleOutput {
+  width: 100%;
+  height: calc(100% - 30px); /* Subtract space for "Last generated" text */
+  padding: 15px;
+  border: 1px solid var(--gray);
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  resize: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  background-color: var(--gray-light);
+  
+  
+}
+
+/* Typed Content Container */
+.typed-content {
+  width: 100%;
+  height: calc(100% - 30px); /* Subtract space for "Last generated" text */
+  padding: 15px;
+  border: 1px solid var(--gray);
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  background-color: var(--gray-light);
+  display: none;
+}
+
+/* Last Generated Info */
+.last-generated {
+  margin-top: 10px;
+  height: 20px; /* Fixed height */
+  font-size: 0.85rem;
+  color: var(--text-light);
+  text-align: right;
+  font-style: italic;
+}
+
+
+/* Typed Content Container */
+.typed-content {
+    width: 100%;
+    height: calc(100% - 30px); /* Subtract space for "Last generated" text */
+    padding: 15px;
+    border: 1px solid var(--gray);
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    box-sizing: border-box;
+    background-color: var(--gray-light);
+}
+
+/* Last Generated Info */
+.last-generated {
+    margin-top: 10px;
+    height: 20px; /* Fixed height */
+    font-size: 0.85rem;
+    color: var(--text-light);
+    text-align: right;
+    font-style: italic;
+}
+
+
+/* Typed Content Container */
+.typed-content {
+  width: 100%;
+  height: calc(100% - 30px); /* Subtract space for "Last generated" text */
+  padding: 15px;
+  border: 1px solid var(--gray);
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  background-color: var(--gray-light);
+}
+
+/* Last Generated Info */
+.last-generated {
+  margin-top: 10px;
+  height: 20px; /* Fixed height */
+  font-size: 0.85rem;
+  color: var(--text-light);
+  text-align: right;
+  font-style: italic;
+}
+
+

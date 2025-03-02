@@ -1039,8 +1039,7 @@ def get_conversation():
 def generate_schedule():
     user = get_current_user()
     if not user:
-        if not user:
-           return redirect(url_for('login'))
+        return redirect(url_for('login'))
         
     data = request.json
     
@@ -1110,12 +1109,21 @@ Brief summary here...
             {"_id": user["_id"]},
             {"$set": {"last_schedule": schedule_data}}
         )
-        return jsonify({"raw_schedule": schedule})
+        
+        # Return with type_animation flag set to true
+        return jsonify({
+            "raw_schedule": schedule,
+            "type_animation": True
+        })
     except Exception as e:
         print(f"Error in generate_schedule: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e), "raw_schedule": f"Error: {str(e)}"})
+        return jsonify({
+            "error": str(e), 
+            "raw_schedule": f"Error: {str(e)}",
+            "type_animation": False
+        })
 
 # Market Section
 
