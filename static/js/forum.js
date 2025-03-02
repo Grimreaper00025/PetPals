@@ -7,36 +7,37 @@ document.addEventListener("DOMContentLoaded", function() {
   // ======= Post interaction functions =======
   function likePost(postId) {
     fetch(forumLikeUrl, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: "post_id=" + postId
     })
     .then(response => response.json())
     .then(data => {
       if (!data.error) {
-        const likeCountElement = document.getElementById("like-count-" + postId);
-        const likeButton = document.getElementById("like-btn-" + postId);
+        const likeBtn = document.getElementById(`like-btn-${postId}`);
+        const likeCount = document.getElementById(`like-count-${postId}`);
         
-        likeCountElement.textContent = data.likes;
+        likeCount.textContent = data.likes;
         
         if (data.liked) {
-          likeButton.classList.add("active");
+          likeBtn.classList.add('active');
+          likeBtn.querySelector('i').classList.replace('far', 'fas');
         } else {
-          likeButton.classList.remove("active");
+          likeBtn.classList.remove('active');
+          likeBtn.querySelector('i').classList.replace('fas', 'far');
         }
-
-        // Add animation effect
-        likeCountElement.classList.add("pulse");
+        
+        // Add animation
+        likeCount.classList.add("pulse");
         setTimeout(() => {
-          likeCountElement.classList.remove("pulse");
+          likeCount.classList.remove("pulse");
         }, 300);
       }
     })
-    .catch(err => {
-      console.error("Error liking post:", err);
-      showToast("Couldn't process your request. Please try again.");
+    .catch(error => {
+      console.error('Error:', error);
     });
   }
   
@@ -88,6 +89,41 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // ======= Animal tags dropdown functionality =======
+  // Updated toggle dropdown function
+  function toggleDropdown() {
+    const dropdown = document.getElementById('animalTagsDropdown');
+    if (dropdown.style.display === 'none' || !dropdown.style.display) {
+      dropdown.style.display = 'block';
+    } else {
+      dropdown.style.display = 'none';
+    }
+  }
+
+  // Updated select animal tag function
+  function selectAnimalTag(animal) {
+    const tagsInput = document.getElementById('animalTagsInput');
+    const selectedTags = document.getElementById('selectedTags');
+    
+    // Parse existing tags
+    let tags = tagsInput.value ? tagsInput.value.split(',') : [];
+    
+    // Only add if not already included
+    if (!tags.includes(animal)) {
+      tags.push(animal);
+      
+      // Create tag element
+      const tagElement = document.createElement('span');
+      tagElement.className = 'tag animal-tag';
+      tagElement.innerHTML = `<i class="fas fa-paw"></i> ${animal} <i class="fas fa-times remove" onclick="removeTag('${animal}')"></i>`;
+      selectedTags.appendChild(tagElement);
+      
+      // Update hidden input
+      tagsInput.value = tags.join(',');
+    }
+  }
+
+// Make sure dropdown is initially hidden in HTML
+// Change in HTML: style="display: none;" for animalTagsDropdown
   const animalTagsHeader = document.getElementById("animalTagsHeader");
   const animalTagsDropdown = document.getElementById("animalTagsDropdown");
   
@@ -188,6 +224,25 @@ document.addEventListener("DOMContentLoaded", function() {
     window.location.href = url;
   }
 
+  // Filter by popular tag using "animal_filter"
+  function filterByTag(tag) {
+    const location = document.getElementById('locationFilter')?.value || 'worldwide';
+    const sort = document.getElementById('sortOption')?.value || 'newest';
+    
+    let url = forumHomeUrl + '?';
+    
+    url += `animal_filter=${encodeURIComponent(tag)}`;
+    
+    if (location !== 'worldwide') {
+      url += `&location=${encodeURIComponent(location)}`;
+    }
+    
+    if (sort !== 'newest') {
+      url += `&sort=${encodeURIComponent(sort)}`;
+    }
+    
+    window.location.href = url;
+  }
   // ======= Post expandable content =======
   const postHeaders = document.querySelectorAll(".post-header");
   postHeaders.forEach(header => {
