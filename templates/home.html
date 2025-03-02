@@ -16,7 +16,6 @@
         <div class="bubble bubble-4"></div>
         <div class="bubble bubble-5"></div>
         <div class="bubble bubble-6"></div>
-        <!-- Particles will be added via JS -->
         <div class="stars-container"></div>
     </div>
 
@@ -46,159 +45,90 @@
             </div>
         </section>
 
+        <!-- Redesigned pet selection with 8 pets in a 4x2 grid with extra large cards -->
         <section class="pet-selection">
-            <div class="pet-grid">
-                <div class="pet-card" data-pet="dog">
+            <div class="pet-grid pet-grid-4x2">
+                <!-- Row 1 -->
+                <div class="pet-card xl-card" data-pet="dog">
                     <div class="pet-image">
-                        <i class="fas fa-dog"></i>
+                        <i class="fas fa-dog fa-3x"></i>
                     </div>
                     <span class="pet-name">Dog</span>
                     <span class="pet-badge">Popular</span>
                 </div>
-                <div class="pet-card" data-pet="cat">
+                <div class="pet-card xl-card" data-pet="cat">
                     <div class="pet-image">
-                        <i class="fas fa-cat"></i>
+                        <i class="fas fa-cat fa-3x"></i>
                     </div>
                     <span class="pet-name">Cat</span>
                     <span class="pet-badge">Trending</span>
                 </div>
-                <div class="pet-card" data-pet="bird">
+                <div class="pet-card xl-card" data-pet="bird">
                     <div class="pet-image">
-                        <i class="fas fa-dove"></i>
+                        <i class="fas fa-dove fa-3x"></i>
                     </div>
                     <span class="pet-name">Bird</span>
                 </div>
-                <div class="pet-card" data-pet="fish">
+                <div class="pet-card xl-card" data-pet="fish">
                     <div class="pet-image">
-                        <i class="fas fa-fish"></i>
+                        <i class="fas fa-fish fa-3x"></i>
                     </div>
                     <span class="pet-name">Fish</span>
                 </div>
-                <div class="pet-card" data-pet="rabbit">
+                
+                <!-- Row 2 -->
+                <div class="pet-card xl-card" data-pet="rabbit">
                     <div class="pet-image">
-                        <i class="fas fa-rabbit"></i>
+                        <i class="fa-solid fa-carrot fa-3x"></i>
                     </div>
                     <span class="pet-name">Rabbit</span>
                 </div>
-                <div class="pet-card" data-pet="hamster">
+                <div class="pet-card xl-card" data-pet="ferret">
                     <div class="pet-image">
-                        <i class="fas fa-hamster"></i>
+                        <i class="fas fa-otter fa-3x"></i>
                     </div>
-                    <span class="pet-name">Hamster</span>
+                    <span class="pet-name">Ferret</span>
                 </div>
-                <div class="pet-card" data-pet="turtle">
+                <div class="pet-card xl-card" data-pet="horse">
                     <div class="pet-image">
-                        <i class="fas fa-turtle"></i>
-                    </div>
-                    <span class="pet-name">Turtle</span>
-                </div>
-                <div class="pet-card" data-pet="snake">
-                    <div class="pet-image">
-                        <i class="fas fa-snake"></i>
-                    </div>
-                    <span class="pet-name">Snake</span>
-                </div>
-                <div class="pet-card" data-pet="horse">
-                    <div class="pet-image">
-                        <i class="fas fa-horse"></i>
+                        <i class="fas fa-horse fa-3x"></i>
                     </div>
                     <span class="pet-name">Horse</span>
-                </div>
-                <div class="pet-card" data-pet="guineapig">
-                    <div class="pet-image">
-                        <i class="fas fa-paw"></i>
-                    </div>
-                    <span class="pet-name">Guinea Pig</span>
                 </div>
             </div>
         </section>
 
+        <!-- Consolidated features section with just 4 main features instead of 12 -->
         <section class="features">
             <h2>Why Choose <span class="highlight">PetPals</span>?</h2>
             <div class="features-grid">
-                <div class="feature-card">
+                <div class="feature-card large-feature">
                     <div class="feature-icon">
                         <i class="fas fa-heartbeat"></i>
                     </div>
-                    <h3>Health Tracking</h3>
-                    <p>Monitor your pet's health metrics and get timely reminders for vaccines and check-ups.</p>
+                    <h3>Complete Health & Wellness</h3>
+                    <p>Monitor your pet's health metrics, get timely reminders for vaccines and check-ups, connect with certified veterinarians, and access personalized nutrition plans tailored for your pet's needs.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-bone"></i>
-                    </div>
-                    <h3>Diet Plans</h3>
-                    <p>Personalized nutrition plans tailored specifically for your pet's breed, age, and health.</p>
-                </div>
-                <div class="feature-card">
+                <div class="feature-card large-feature">
                     <div class="feature-icon">
                         <i class="fas fa-map-marked-alt"></i>
                     </div>
-                    <h3>Activity Tracking</h3>
-                    <p>Track walks, playtime, and exercise to keep your furry friend active and healthy.</p>
+                    <h3>Activity & Training</h3>
+                    <p>Track walks and playtime, access professional training resources, book trusted dog walkers, and get personalized exercise recommendations to keep your pet active and well-behaved.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shower"></i>
-                    </div>
-                    <h3>Grooming Services</h3>
-                    <p>Professional pet salon and cleaning services with easy scheduling at your convenience.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-md"></i>
-                    </div>
-                    <h3>Veterinary Care</h3>
-                    <p>Connect with certified veterinarians for consultations, emergencies, and regular check-ups.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3>Pet Community</h3>
-                    <p>Join our community of pet lovers to share experiences, tips, and adorable pictures.</p>
-                </div>
-                <div class="feature-card">
+                <div class="feature-card large-feature">
                     <div class="feature-icon">
                         <i class="fas fa-robot"></i>
                     </div>
-                    <h3>Pet AI Assistant</h3>
-                    <p>Get personalized advice and integrate your pet's routine with your daily schedule.</p>
+                    <h3>Smart Pet Management</h3>
+                    <p>Get AI-powered advice, integrate with Google Calendar for reminders, never miss medicines or meals, and receive personalized recommendations for your pet's daily routine.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card large-feature">
                     <div class="feature-icon">
-                        <i class="fas fa-calendar-alt"></i>
+                        <i class="fas fa-store"></i>
                     </div>
-                    <h3>Smart Reminders</h3>
-                    <p>Never miss medicines, meals, or appointments with Google Calendar integration.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <h3>Pet Marketplace</h3>
-                    <p>One-stop shop for all pet supplies, toys, food, and accessories at great prices.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-walking"></i>
-                    </div>
-                    <h3>Dog Walking</h3>
-                    <p>Book trusted dog walkers in your area when you're busy or away from home.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <h3>Training Programs</h3>
-                    <p>Access to professional training resources and programs for all types of pets.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-home"></i>
-                    </div>
-                    <h3>Pet Boarding</h3>
-                    <p>Find safe, comfortable boarding options when you need to travel without your pet.</p>
+                    <h3>Services & Community</h3>
+                    <p>Shop for all pet supplies in our marketplace, book grooming and boarding services, and join our thriving community of pet lovers to share experiences and get support.</p>
                 </div>
             </div>
         </section>
@@ -278,7 +208,7 @@
             </div>
         </div>
     </div>
-
+    <script src="https://kit.fontawesome.com/64a95851be.js" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/home.js') }}"></script>
 </body>
 </html>

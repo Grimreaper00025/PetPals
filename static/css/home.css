@@ -390,11 +390,11 @@ main {
     to { opacity: 1; }
 }
 
-/* Modified pet grid to show 5 pets per row instead of 3 */
+/* Modified pet grid to show 4 pets per row */
 .pet-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1.2rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.3rem;
     margin: 0 auto;
     max-width: 1100px;
 }
@@ -402,7 +402,7 @@ main {
 .pet-card {
     background-color: var(--white);
     border-radius: var(--border-radius);
-    padding: 1.4rem 1rem;
+    padding: 1.5rem 1rem;
     text-align: center;
     box-shadow: var(--shadow-sm);
     cursor: pointer;

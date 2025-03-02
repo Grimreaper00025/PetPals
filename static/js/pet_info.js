@@ -17,8 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update icon based on pet type
         updatePetIcon(petType);
         
-        // Load breeds for the selected pet type
-        loadBreeds(petType);
     }
     
     // Add animation to the form inputs
@@ -81,8 +79,9 @@ document.addEventListener('DOMContentLoaded', function() {
             'cat': '#ff6584',
             'bird': '#4CAF50',
             'fish': '#03A9F4',
-            'rabbit': '#FF9800',
-            'hamster': '#795548'
+            'rabbit':'#FF9800',
+            'horse': '#8BC34A',
+            'ferret': '#FF5722',
         };
         
         if (colors[petType]) {
@@ -96,11 +95,12 @@ document.addEventListener('DOMContentLoaded', function() {
             'cat': 'fas fa-cat',
             'bird': 'fas fa-dove',
             'fish': 'fas fa-fish',
-            'rabbit': 'fas fa-carrot',
-            'hamster': 'fas fa-drumstick-bite'
+            'rabbit': 'fa-solid fa-carrot',
+            'horse': 'fas fa-horse',
+            'ferret': 'fas fa-otter'
         };
         
-        return iconMap[petType] || 'fas fa-paw';
+        return iconMap[petType] || 'fa-solid fa-paw';
     }
     
     function loadBreeds(petType) {
