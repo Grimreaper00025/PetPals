@@ -3,7 +3,330 @@
 {% block title %}Pet Dashboard{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+/* === DASHBOARD CONTAINER === */
+.dashboard-container {
+  max-width: 1400px;
+  margin: 1rem 7.5rem;
+  padding: 0 1rem;
+}
 
+/* === USER PROFILE AND PETS HORIZONTAL LAYOUT === */
+.profile-section {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+
+/* === USER PROFILE CARD === */
+.user-profile-card {
+  background: transparent;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+    padding: 0;
+}
+
+.user-profile-header {
+  padding: 1.25rem;
+  text-align: center;
+  color: white;
+}
+
+.user-avatar-large {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.user-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-profile-info h1 {
+  margin-bottom: 0.25rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.user-email {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  margin-bottom: 0.25rem;
+}
+
+.user-member-since {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.user-bio {
+  margin-top: 0.75rem;
+  font-style: italic;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.user-stats {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.stat-item {
+  text-align: center;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.stat-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 70%;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--dark-color);
+  opacity: 0.7;
+}
+
+.user-actions {
+  display: flex;
+  padding: 0.75rem;
+  gap: 0.5rem;
+}
+
+.user-actions .btn {
+  flex: 1;
+  text-align: center;
+  font-size: 0.8rem;
+  padding: 0.5rem 0.75rem;
+}
+
+/* === BUTTONS === */
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.25rem;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  font-size: 0.85rem;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn.secondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.btn.secondary:hover {
+  background-color: #8a5db7;
+}
+
+.add-pet-btn {
+  background-color:white;
+  color: white;
+}
+
+.add-pet-btn:hover {
+  background-color: #ffffff;
+}
+
+.view-details-btn {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.view-details-btn:hover {
+  background-color: #5a329a;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--dark-color);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-icon:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--primary-color);
+}
+
+/* === PETS SECTION (HORIZONTAL DISPLAY) === */
+.pets-section {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  color: white;
+}
+
+.section-header h2 {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Horizontal scrolling pets container */
+.pets-container {
+  display: flex;
+  overflow-x: auto;
+  padding: 1rem;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  gap: 1rem;
+}
+
+.pets-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.pets-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.pets-container::-webkit-scrollbar-thumb {
+  background: #d4c6e9;
+  border-radius: 10px;
+}
+
+.pets-container::-webkit-scrollbar-thumb:hover {
+  background: #9d6eca;
+}
+
+.pet-card {
+  flex: 0 0 280px;
+  background: white;
+  border-radius: 2 rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: var(--transition);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.pet-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.pet-image {
+  height: 150px;
+  overflow: hidden;
+}
+
+.pet-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition);
+}
+
+.pet-card:hover .pet-image img {
+  transform: scale(1.05);
+}
+
+.pet-info {
+  padding: 0.75rem;
+}
+
+.pet-info h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--primary-color);
+}
+
+.pet-info p {
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.pet-schedule {
+  margin-top: 0.5rem;
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.schedule-item i {
+  width: 18px;
+  margin-right: 0.5rem;
+  color: var(--secondary-color);
+}
+
+.no-pets {
+  width: 100%;
+  text-align: center;
+  padding:.75rem;
+}
+
+.no-pets p {
+  margin-bottom: 1rem;
+  color: #6c757d;
+}
+
+/* === DASHBOARD SECTIONS === */
+.dashboard-section {
+  background: transparent;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+</style>
 <div class="dashboard-container">
     <div class="background-animation">
         <div class="bubble bubble-1"></div>
@@ -14,43 +337,102 @@
         <div class="bubble bubble-6"></div>
         <div class="stars-container"></div>
     </div>
-    <!-- User Profile Section -->
-    <div class="user-profile-card">
-        <div class="user-profile-header">
-            <div class="user-avatar-large">
-                <img src="{{ user.avatar_url|default('https://i.pravatar.cc/150?img=32') }}" alt="{{ user.name }}">
-            </div>
-            <div class="user-profile-info">
-                <h1>{{ user.name }}</h1>
-                <p class="user-email">{{ user.email }}</p>
-                <p class="user-member-since">Member since: {{ user.member_since|default('March 2025') }}</p>
-                {% if user.bio %}
-                <div class="user-bio">
-                <p>{{ user.bio }}</p>
-              </div>
- {% endif %}
-            </div>
+    <div class="profile-pets-wrapper">
+        <!-- User Profile Section -->
+        <div class="user-profile-card"style="box-shadow: none; padding-top: 2rem;">
+            <!-- User profile content remains the same -->
+                <div class="user-profile-header">
+                    <div class="user-avatar-large">
+                        <img src="{{ user.avatar_url|default('https://i.pravatar.cc/150?img=32') }}" alt="{{ user.name }}">
+                    </div>
+                    <div class="user-profile-info">
+                        <h1 style="font-size: 40px;">{{ user.name }}</h1>
+                        <p class="user-email">{{ user.email }}</p>
+                        <p class="user-member-since">Member since: {{ user.member_since|default('March 2025') }}</p>
+                        {% if user.bio %}
+                        <div class="user-bio">
+                        <p style="color: black;">{{ user.bio }}</p>
+                      </div>
+         {% endif %}
+                    </div>
+                </div>
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" style="color: rgb(255, 130, 182);">{{ pets|length }}</span>
+                        <span class="stat-label">Pets</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" style="color: rgb(255, 130, 182);">{{ user.events|length }}</span>
+                        <span class="stat-label" >Events</span>
+                    </div>
+                </div>
+                <div class="user-actions">
+                    <a href="{{ url_for('edit_profile') }}" class="btn secondary">Edit Profile</a>
+                    <a href="{{ url_for('add_pet') }}" class="btn add-pet-btn">Add New Pet</a>
+                </div>
         </div>
-        <div class="user-stats">
-            <div class="stat-item">
-                <span class="stat-value">{{ pets|length }}</span>
-                <span class="stat-label">Pets</span>
+
+        <!-- Pet List Section - moved up to be side by side with profile -->
+        <div class="dashboard-section pets-section">
+            <div class="section-header">
+                <h2 style="color: black; size: 50px;">Your Pets</h2>
             </div>
-            <div class="stat-item">
-                <span class="stat-value">{{ user.events|length }}</span>
-                <span class="stat-label">Events</span>
+            <div class="pets-container">
+                {% if pets %}
+                    {% for pet in pets %}
+                    <div class="pet-card">
+                        <div class="pet-image">
+                            <img src="{{ pet.image_url }}" alt="{{ pet.name }}">
+                        </div>
+                        <div class="pet-info">
+                            <h2>{{ pet.name }}</h2>
+                            <p>{{ pet.breed }} ({{ pet.type }})</p>
+                            <p>Age: {{ pet.age }} years</p>
+                            
+                            <div class="pet-schedule">
+                                <div class="schedule-item">
+                                    <i class="fas fa-utensils"></i>
+                                    <span>Feeding: {{ pet.feeding_schedule }}</span>
+                                </div>
+                                <div class="schedule-item">
+                                    <i class="fas fa-syringe"></i>
+                                    <span>Next Vaccination: {{ pet.vaccination_date }}</span>
+                                </div>
+                                <div class="schedule-item">
+                                    <i class="fas fa-cut"></i>
+                                    <span>Grooming: {{ pet.grooming_schedule }}</span>
+                                </div>
+                                {% if pet.type == "Dog" %}
+                                <div class="schedule-item">
+                                    <i class="fas fa-walking"></i>
+                                    <span>Walks: {{ pet.walking_schedule }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="schedule-item">
+                                    <i class="fas fa-bone"></i>
+                                    <span>Treats: {{ pet.treat_time }}</span>
+                                </div>
+                            </div>
+                            
+                            <a href="{{ url_for('pet_details', pet_id=pet._id) }}" class="btn view-details-btn">View Details</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-pets">
+                        <p>You don't have any pets yet. Add your first pet to get started!</p>
+                        <a href="{{ url_for('add_pet') }}" class="btn add-pet-btn">Add Pet</a>
+                    </div>
+                {% endif %}
             </div>
-        </div>
-        <div class="user-actions">
-            <a href="{{ url_for('edit_profile') }}" class="btn secondary">Edit Profile</a>
-            <a href="{{ url_for('add_pet') }}" class="btn add-pet-btn">Add New Pet</a>
         </div>
     </div>
+    <!-- User Profile Section -->
 
     <!-- Events Section -->
     <div class="dashboard-section">
         <div class="section-header">
-            <h2>Upcoming Events</h2>
+            <h2 style="color: black; size: 50px;">Upcoming Events</h2>
             <div class="header-actions">
                 <button id="showCalendarBtn" class="btn-icon">
                     <i class="fas fa-calendar-alt"></i>
@@ -58,9 +440,6 @@
                 <button id="createEventBtn" class="btn secondary">Create Event</button>
             </div>
         </div>
-
-    
-        
        
  <!-- Calendar Modal -->
  <div id="calendarModal" class="modal">
@@ -109,7 +488,7 @@
     <!-- Create Schedule Section -->
  <div class="dashboard-section">
     <div class="section-header">
-        <h2>Daily Schedule Generator</h2>
+        <h2 style="color: black; size: 50px;">Daily Schedule Generator</h2>
     </div>
     
     <div class="schedule-generator-container">
@@ -166,63 +545,6 @@
         </div>
     </div>
  </div>
-
-
-    <!-- Pet List Section -->
-    <div class="dashboard-section">
-        <div class="section-header">
-            <h2>Your Pets</h2>
-        </div>
-        
-        <div class="pets-container">
-            {% if pets %}
-                {% for pet in pets %}
-                <div class="pet-card">
-                    <div class="pet-image">
-                        <img src="{{ pet.image_url }}" alt="{{ pet.name }}">
-                    </div>
-                    <div class="pet-info">
-                        <h2>{{ pet.name }}</h2>
-                        <p>{{ pet.breed }} ({{ pet.type }})</p>
-                        <p>Age: {{ pet.age }} years</p>
-                        
-                        <div class="pet-schedule">
-                            <div class="schedule-item">
-                                <i class="fas fa-utensils"></i>
-                                <span>Feeding: {{ pet.feeding_schedule }}</span>
-                            </div>
-                            <div class="schedule-item">
-                                <i class="fas fa-syringe"></i>
-                                <span>Next Vaccination: {{ pet.vaccination_date }}</span>
-                            </div>
-                            <div class="schedule-item">
-                                <i class="fas fa-cut"></i>
-                                <span>Grooming: {{ pet.grooming_schedule }}</span>
-                            </div>
-                            {% if pet.type == "Dog" %}
-                            <div class="schedule-item">
-                                <i class="fas fa-walking"></i>
-                                <span>Walks: {{ pet.walking_schedule }}</span>
-                            </div>
-                            {% endif %}
-                            <div class="schedule-item">
-                                <i class="fas fa-bone"></i>
-                                <span>Treats: {{ pet.treat_time }}</span>
-                            </div>
-                        </div>
-                        
-                        <a href="{{ url_for('pet_details', pet_id=pet._id) }}" class="btn view-details-btn">View Details</a>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="no-pets">
-                    <p>You don't have any pets yet. Add your first pet to get started!</p>
-                    <a href="{{ url_for('add_pet') }}" class="btn add-pet-btn">Add Pet</a>
-                </div>
-            {% endif %}
-        </div>
-    </div>
  </div>
 
 <!-- Create Event Modal -->
@@ -865,11 +1187,6 @@ function typeMessage(message, element, speed = 15) {
         });
     }
 });
-
-
-
-
-
 
 </script>
 {% endblock %}
