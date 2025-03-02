@@ -480,11 +480,11 @@ footer {
     margin-right: 5px;
 }
 
-/* Add these styles to your CSS */
+
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 500px;
+    height: 600px;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: var(--shadow-md);
@@ -601,6 +601,62 @@ footer {
     0% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
     100% { transform: translateY(0); }
+}
+
+/* part convo */
+
+/* Past Conversations Styles */
+.past-conversations-container {
+    margin-top: 30px;
+    border-top: 1px solid var(--gray);
+    padding-top: 20px;
+}
+
+.past-conversations-container h3 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.past-conversations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.past-conversation-item {
+    background-color: var(--gray-light);
+    border-radius: 10px;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: all var(--animation-speed) ease;
+    border-left: 3px solid transparent;
+}
+
+.past-conversation-item:hover {
+    background-color: rgba(108, 99, 255, 0.1);
+    border-left-color: var(--primary);
+}
+
+.conversation-title {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.conversation-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.no-conversations {
+    text-align: center;
+    color: var(--text-light);
+    padding: 20px;
+    font-style: italic;
 }
 
 

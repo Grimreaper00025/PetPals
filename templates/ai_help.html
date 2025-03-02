@@ -33,19 +33,44 @@
     </div>
 
     <div class="container">
-        <div class="chat-container">
-            <div id="chat-messages" class="chat-messages">
-                <div class="welcome-message">
-                    <i class="fas fa-robot" style="font-size: 30px; color: var(--primary); margin-bottom: 10px;"></i>
-                    <p>Hello! I'm your PetPals AI assistant. How can I help with your pet care questions today?</p>
+        <div class="container">
+            <h1>AI Pet Care Assistant</h1>
+            
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    <div class="welcome-message">
+                        <i class="fas fa-robot" style="font-size: 30px; color: var(--primary); margin-bottom: 10px;"></i>
+                        <p>Hello! I'm your PetPals AI assistant. How can I help with your pet care questions today?</p>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <textarea id="question-box" placeholder="Ask a question about pet care..." rows="2"></textarea>
+                    <button id="submit-btn"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
             
-            <div class="chat-input">
-                <textarea id="question-box" placeholder="Ask a question about pet care..." rows="2"></textarea>
-                <button id="submit-btn"><i class="fas fa-paper-plane"></i></button>
+            <!-- Past Conversations Section -->
+            <div class="past-conversations-container">
+                <h3 style="color: #6c63ff;">Past Conversations</h3>
+                <div class="past-conversations-list">
+                    {% if past_conversations %}
+                        {% for conv in past_conversations %}
+                        <div class="past-conversation-item" data-id="{{ conv.id }}">
+                            <div class="conversation-title">{{ conv.title }}</div>
+                            <div class="conversation-meta">
+                                <span class="conversation-date">{{ conv.timestamp }}</span>
+                                <span class="conversation-count">{{ conv.message_count }} messages</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-conversations">No past conversations found</div>
+                    {% endif %}
+                </div>
             </div>
         </div>
+        
           
     </div>
     
@@ -147,9 +172,10 @@ function createRippleForBubble(bubble) {
     }
     
     $(document).ready(function() {
-    // Initialize conversation history
+    // Initialize conversation history and ID
     let conversationHistory = [];
     let typingInProgress = false;
+    let currentConversationId = null;
     
     // Function to add a message to the chat
     function addMessage(content, isUser) {
@@ -239,6 +265,56 @@ function createRippleForBubble(bubble) {
         return indicator;
     }
     
+    // Function to clear chat
+    function clearChat() {
+        $('#chat-messages').html('');
+        // Add welcome message back
+        const welcomeMessage = $(`
+            <div class="welcome-message">
+                <i class="fas fa-robot" style="font-size: 30px; color: var(--primary); margin-bottom: 10px;"></i>
+                <p>Hello! I'm your PetPals AI assistant. How can I help with your pet care questions today?</p>
+            </div>
+        `);
+        $('#chat-messages').append(welcomeMessage);
+    }
+    
+    // Function to load a past conversation
+    function loadConversation(conversationId) {
+        // Show loading indicator
+        clearChat();
+        const loadingMessage = $('<div class="message assistant-message"><p>Loading conversation...</p></div>');
+        $('#chat-messages').append(loadingMessage);
+        
+        // Fetch the conversation from the server
+        $.ajax({
+            url: '/get_conversation',
+            type: 'GET',
+            data: { 'conversation_id': conversationId },
+            success: function(response) {
+                if (response.history) {
+                    // Clear the chat again
+                    clearChat();
+                    
+                    // Set the current conversation ID
+                    currentConversationId = conversationId;
+                    
+                    // Set the conversation history
+                    conversationHistory = response.history;
+                    
+                    // Display all messages
+                    for (let entry of response.history) {
+                        addMessage(entry.content, entry.role === 'user');
+                    }
+                } else {
+                    loadingMessage.html('<p>Error loading conversation.</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                loadingMessage.html('<p>Error loading conversation: ' + error + '</p>');
+            }
+        });
+    }
+    
     // Handle form submission
     $('#submit-btn').click(function() {
         sendMessage();
@@ -250,6 +326,12 @@ function createRippleForBubble(bubble) {
             e.preventDefault();
             sendMessage();
         }
+    });
+    
+    // Handle clicking on past conversations
+    $('.past-conversation-item').click(function() {
+        const conversationId = $(this).data('id');
+        loadConversation(conversationId);
     });
     
     function sendMessage() {
@@ -284,7 +366,8 @@ function createRippleForBubble(bubble) {
             type: 'POST',
             data: {
                 'question': question,
-                'conversation_history': JSON.stringify(conversationHistory)
+                'conversation_history': JSON.stringify(conversationHistory),
+                'conversation_id': currentConversationId
             },
             success: function(response) {
                 // Remove typing indicator
@@ -310,13 +393,24 @@ function createRippleForBubble(bubble) {
                     }
                     scrollToBottom();
                     
-                    // Update conversation history
+                    // Update conversation history and ID
                     if (response.conversation_history) {
                         conversationHistory = response.conversation_history;
                     } else {
                         // Fallback if history not returned
                         conversationHistory.push({"role": "user", "content": question});
                         conversationHistory.push({"role": "assistant", "content": response.raw_schedule});
+                    }
+                    
+                    if (response.conversation_id) {
+                        currentConversationId = response.conversation_id;
+                    }
+                    
+                    // If this is a new conversation, refresh the page to show it in the list
+                    if (!currentConversationId && response.conversation_id) {
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
                     }
                 } else if (response.error) {
                     const messageDiv = $('<div class="message assistant-message"></div>');
@@ -350,7 +444,6 @@ function createRippleForBubble(bubble) {
         });
     }
 });
-
 
 });
 </script>

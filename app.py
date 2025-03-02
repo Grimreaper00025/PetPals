@@ -84,6 +84,14 @@ def home():
         return redirect(url_for("dashboard"))
     return render_template('home.html')
 
+@app.context_processor
+def inject_user():
+    """Make user available to all templates."""
+    if 'user_id' in session:
+        user = users.find_one({"_id": ObjectId(session['user_id'])})
+        return {'user': user}
+    return {'user': None}
+
 @app.route('/get_breeds/<pet_type>')
 def get_breeds(pet_type):
     if pet_type in PET_BREEDS:
@@ -397,7 +405,8 @@ def pet_details(pet_id):
     pet_info = f"Pet: {pet['name']}, Type: {pet['type']}, Breed: {pet['breed']}, Age: {pet['age']}"
     
     # Get fun facts specific to the pet
-    fun_facts_prompt = f"Give 3-5 interesting and fun facts about {pet['breed']} {pet['type']}s. Format as a bulleted list."
+    fun_facts_prompt = f"""Give 3-5 interesting and fun facts about {pet['breed']} {pet['type']}s. Format as a bulleted list.IMPORTANT: Do not use any Markdown formatting in your response. Do not use asterisks (*) for emphasis or formatting. 
+Instead, use plain text with paragraph breaks for organization. Use ALL CAPS for headings or important points. Use numbering and leave line after each fact"""
     try:
         fun_facts_response = Gemini_client.models.generate_content(
             model="gemini-2.0-flash", contents=fun_facts_prompt)
@@ -407,7 +416,9 @@ def pet_details(pet_id):
         fun_facts = "Could not generate fun facts at this time."
     
     # Get care recommendations for the pet
-    care_prompt = f"Give specific care recommendations for a {pet['breed']} {pet['type']} that is {pet['age']} years old. Include advice on diet, exercise, grooming, and health concerns. Format as a bulleted list with category headers. Each point should be short and concise. Give 3 to 5 points"
+    care_prompt = f"""Give specific care recommendations for a {pet['breed']} {pet['type']} that is {pet['age']} years old. Include advice on diet, exercise, grooming, and health concerns. Format as a bulleted list with category headers. Each point should be short and concise. Give 3 to 5 points 
+    IMPORTANT: Do not use any Markdown formatting in your response. Do not use asterisks (*) for emphasis or formatting. 
+Instead, use plain text with paragraph breaks for organization. Use ALL CAPS for headings or important points. Use numbering and leave line after each headfing"""
     try:
         care_response = Gemini_client.models.generate_content(
             model="gemini-2.0-flash", contents=care_prompt)
@@ -816,12 +827,38 @@ def ai_help():
     user = get_current_user()
     if not user:
         return redirect(url_for('login'))
-        
+    
+    # Get past conversations for this user
+    past_conversations = []
+    try:
+        # Assuming you have a MongoDB collection for conversations
+        past_conversations_data = db.conversations.find({"user_id": user["_id"]}).sort("timestamp", -1).limit(10)
+        for conv in past_conversations_data:
+            # Extract first question and truncate if too long
+            first_question = ""
+            if conv["history"] and len(conv["history"]) > 0:
+                for entry in conv["history"]:
+                    if entry["role"] == "user":
+                        first_question = entry["content"]
+                        if len(first_question) > 50:
+                            first_question = first_question[:50] + "..."
+                        break
+            
+            past_conversations.append({
+                "id": str(conv["_id"]),
+                "title": first_question or "Conversation",
+                "timestamp": conv["timestamp"].strftime("%Y-%m-%d %H:%M"),
+                "message_count": len(conv["history"])
+            })
+    except Exception as e:
+        print(f"Error fetching past conversations: {e}")
+    
     if request.method == 'POST':
         try:
             # Get the new question and conversation history
             question = request.form.get('question')
             conversation_history = request.form.get('conversation_history', '[]')
+            conversation_id = request.form.get('conversation_id')
             
             # Parse the conversation history from JSON
             try:
@@ -863,10 +900,29 @@ Instead, use plain text with paragraph breaks for organization. Use ALL CAPS for
             history.append({"role": "user", "content": question})
             history.append({"role": "assistant", "content": answer_text})
             
+            # Save or update the conversation in the database
+            now = datetime.now()
+            
+            if conversation_id:
+                # Update existing conversation
+                db.conversations.update_one(
+                    {"_id": ObjectId(conversation_id), "user_id": user["_id"]},
+                    {"$set": {"history": history, "updated_at": now}}
+                )
+            else:
+                # Create new conversation
+                conversation_id = str(db.conversations.insert_one({
+                    "user_id": user["_id"],
+                    "history": history,
+                    "timestamp": now,
+                    "updated_at": now
+                }).inserted_id)
+            
             # Return JSON response with answer and updated history
             return jsonify({
                 "raw_schedule": answer_text,
-                "conversation_history": history
+                "conversation_history": history,
+                "conversation_id": conversation_id
             })
             
         except Exception as e:
@@ -875,8 +931,38 @@ Instead, use plain text with paragraph breaks for organization. Use ALL CAPS for
             traceback.print_exc()
             return jsonify({"error": str(e), "raw_schedule": f"Error: {str(e)}"})
     
-    # For GET requests, just render the template
-    return render_template('ai_help.html')
+    # For GET requests, render the template with past conversations
+    return render_template('ai_help.html', past_conversations=past_conversations)
+
+@app.route('/get_conversation', methods=['GET'])
+def get_conversation():
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Not logged in"})
+    
+    conversation_id = request.args.get('conversation_id')
+    if not conversation_id:
+        return jsonify({"error": "No conversation ID provided"})
+    
+    try:
+        # Find the conversation in the database
+        conversation = db.conversations.find_one({
+            "_id": ObjectId(conversation_id),
+            "user_id": user["_id"]
+        })
+        
+        if not conversation:
+            return jsonify({"error": "Conversation not found"})
+        
+        return jsonify({
+            "history": conversation["history"]
+        })
+        
+    except Exception as e:
+        print(f"Error getting conversation: {e}")
+        return jsonify({"error": str(e)})
+
+
 
 
 @app.route('/generate_schedule', methods=['POST'])
