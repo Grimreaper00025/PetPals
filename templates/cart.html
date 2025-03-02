@@ -1,10 +1,23 @@
-{% extends "base-market.html" %}
+{% extends "base.html" %}
 
 {% block title %}Shopping Cart - Pet Marketplace{% endblock %}
 
 {% block content %}
-<h1>Shopping Cart</h1>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/market.css') }}">
+    <!-- Bootstrap Icons CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
+<div class="background-animation">
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    <div class="bubble bubble-4"></div>
+    <div class="bubble bubble-5"></div>
+    <div class="bubble bubble-6"></div>
+</div>
+
+
+<h1 class="cart-page-heading">Shopping Cart</h1>
 {% if items %}
 <div class="cart-container">
     <div class="cart-items">
@@ -62,14 +75,10 @@
             <a href="{{ url_for('clear_cart') }}" class="clear-cart-btn">Clear Cart</a>
         </div>
     </div>
-    
-    
-       
-            
 </div>
 {% else %}
 <div class="empty-cart">
-    <h2>Your cart is empty</h2>
+    <h2 class="cart-page-heading">Your cart is empty</h2>
     <p>Looks like you haven't added any items to your cart yet.</p>
     <a href="{{ url_for('market') }}" class="btn">Continue Shopping</a>
 </div>
