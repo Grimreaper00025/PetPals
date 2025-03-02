@@ -1,5 +1,3 @@
-// Enhanced post_detail.js with animations
-
 function likePost(postId) {
   const likeButton = document.querySelector(`[onclick="likePost('${postId}')"]`);
   const heartIcon = likeButton.querySelector('i');
@@ -19,37 +17,37 @@ function likePost(postId) {
     },
     body: JSON.stringify({ post_id: postId })
   })
-    .then(response => response.json())
-    .then(data => {
-      if (!data.error) {
-        const likeCountElement = document.getElementById("like-count-" + postId);
+  .then(response => response.json())
+  .then(data => {
+    if (!data.error) {
+      const likeCountElement = document.getElementById("like-count-" + postId);
+      
+      // Animate the count change
+      likeCountElement.style.transform = "scale(1.3)";
+      likeCountElement.style.color = "#ff6584";
+      
+      setTimeout(() => {
+        likeCountElement.textContent = data.likes;
+        likeCountElement.style.transform = "scale(1)";
         
-        // Animate the count change
-        likeCountElement.style.transform = "scale(1.3)";
-        likeCountElement.style.color = "#ff6584";
+        // Update the button state based on server response
+        if (data.liked) {
+          heartIcon.classList.remove('far');
+          heartIcon.classList.add('fas');
+          likeButton.classList.add('active');
+        } else {
+          heartIcon.classList.remove('fas');
+          heartIcon.classList.add('far');
+          likeButton.classList.remove('active');
+        }
         
         setTimeout(() => {
-          likeCountElement.textContent = data.likes;
-          likeCountElement.style.transform = "scale(1)";
-          
-          // Update the button state
-          if (heartIcon.classList.contains('far')) {
-            heartIcon.classList.remove('far');
-            heartIcon.classList.add('fas');
-            likeButton.classList.add('active');
-          } else {
-            heartIcon.classList.remove('fas');
-            heartIcon.classList.add('far');
-            likeButton.classList.remove('active');
-          }
-          
-          setTimeout(() => {
-            likeCountElement.style.color = "";
-          }, 300);
+          likeCountElement.style.color = "";
         }, 300);
-      }
-    })
-    .catch(err => console.error("Error liking post:", err));
+      }, 300);
+    }
+  })
+  .catch(err => console.error("Error liking post:", err));
 }
 
 function sharePost(postId, event) {

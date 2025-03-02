@@ -167,7 +167,7 @@
                 {% if post.category %}
                   <span class="category-badge">{{ post.category|capitalize }}</span>
                 {% endif %}
-                {% if post.animal_tags %}
+                {% if post.animal_tags and post.animal_tags|length > 0 %}
                   {% for tag in post.animal_tags %}
                     <span class="tag animal-tag"><i class="fas fa-paw"></i> {{ tag|capitalize }}</span>
                   {% endfor %}
@@ -198,13 +198,6 @@
               <h3 class="post-title">{{ post.title }}</h3>
               <p class="post-preview">{{ post.content|truncate(150) }}</p>
               
-              <div class="post-tags">
-                {% if post.animal_tags %}
-                  {% for tag in post.animal_tags %}
-                  <span class="tag animal-tag"><i class="fas fa-paw"></i> {{ tag|capitalize }}</span>
-                  {% endfor %}
-                {% endif %}
-              </div>
             </div>
             
             <div class="post-footer">
