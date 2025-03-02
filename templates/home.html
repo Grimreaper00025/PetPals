@@ -14,6 +14,10 @@
         <div class="bubble bubble-2"></div>
         <div class="bubble bubble-3"></div>
         <div class="bubble bubble-4"></div>
+        <div class="bubble bubble-5"></div>
+        <div class="bubble bubble-6"></div>
+        <!-- Particles will be added via JS -->
+        <div class="stars-container"></div>
     </div>
 
     <header>
@@ -33,65 +37,243 @@
         <section class="hero">
             <h1 class="title">Welcome to <span class="highlight">PetPals</span></h1>
             <p class="subtitle">One stop platform for all your pet needs</p>
-            
+
             <div class="cta">
                 <p class="cta-text">Let's get started! Select your pet below:</p>
+                <div class="cta-arrow">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
             </div>
         </section>
 
         <section class="pet-selection">
             <div class="pet-grid">
                 <div class="pet-card" data-pet="dog">
-                    <div class="pet-icon">
+                    <div class="pet-image">
                         <i class="fas fa-dog"></i>
                     </div>
                     <span class="pet-name">Dog</span>
+                    <span class="pet-badge">Popular</span>
                 </div>
                 <div class="pet-card" data-pet="cat">
-                    <div class="pet-icon">
+                    <div class="pet-image">
                         <i class="fas fa-cat"></i>
                     </div>
                     <span class="pet-name">Cat</span>
+                    <span class="pet-badge">Trending</span>
                 </div>
                 <div class="pet-card" data-pet="bird">
-                    <div class="pet-icon">
+                    <div class="pet-image">
                         <i class="fas fa-dove"></i>
                     </div>
                     <span class="pet-name">Bird</span>
                 </div>
                 <div class="pet-card" data-pet="fish">
-                    <div class="pet-icon">
+                    <div class="pet-image">
                         <i class="fas fa-fish"></i>
                     </div>
                     <span class="pet-name">Fish</span>
                 </div>
                 <div class="pet-card" data-pet="rabbit">
-                    <div class="pet-icon">
-                        <i class="fas fa-carrot"></i>
+                    <div class="pet-image">
+                        <i class="fas fa-rabbit"></i>
                     </div>
                     <span class="pet-name">Rabbit</span>
                 </div>
                 <div class="pet-card" data-pet="hamster">
-                    <div class="pet-icon">
-                        <i class="fas fa-drumstick-bite"></i>
+                    <div class="pet-image">
+                        <i class="fas fa-hamster"></i>
                     </div>
                     <span class="pet-name">Hamster</span>
+                </div>
+                <div class="pet-card" data-pet="turtle">
+                    <div class="pet-image">
+                        <i class="fas fa-turtle"></i>
+                    </div>
+                    <span class="pet-name">Turtle</span>
+                </div>
+                <div class="pet-card" data-pet="snake">
+                    <div class="pet-image">
+                        <i class="fas fa-snake"></i>
+                    </div>
+                    <span class="pet-name">Snake</span>
+                </div>
+                <div class="pet-card" data-pet="horse">
+                    <div class="pet-image">
+                        <i class="fas fa-horse"></i>
+                    </div>
+                    <span class="pet-name">Horse</span>
+                </div>
+                <div class="pet-card" data-pet="guineapig">
+                    <div class="pet-image">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <span class="pet-name">Guinea Pig</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <h2>Why Choose <span class="highlight">PetPals</span>?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3>Health Tracking</h3>
+                    <p>Monitor your pet's health metrics and get timely reminders for vaccines and check-ups.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bone"></i>
+                    </div>
+                    <h3>Diet Plans</h3>
+                    <p>Personalized nutrition plans tailored specifically for your pet's breed, age, and health.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3>Activity Tracking</h3>
+                    <p>Track walks, playtime, and exercise to keep your furry friend active and healthy.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shower"></i>
+                    </div>
+                    <h3>Grooming Services</h3>
+                    <p>Professional pet salon and cleaning services with easy scheduling at your convenience.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3>Veterinary Care</h3>
+                    <p>Connect with certified veterinarians for consultations, emergencies, and regular check-ups.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Pet Community</h3>
+                    <p>Join our community of pet lovers to share experiences, tips, and adorable pictures.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>Pet AI Assistant</h3>
+                    <p>Get personalized advice and integrate your pet's routine with your daily schedule.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Smart Reminders</h3>
+                    <p>Never miss medicines, meals, or appointments with Google Calendar integration.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>Pet Marketplace</h3>
+                    <p>One-stop shop for all pet supplies, toys, food, and accessories at great prices.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <h3>Dog Walking</h3>
+                    <p>Book trusted dog walkers in your area when you're busy or away from home.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Training Programs</h3>
+                    <p>Access to professional training resources and programs for all types of pets.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3>Pet Boarding</h3>
+                    <p>Find safe, comfortable boarding options when you need to travel without your pet.</p>
                 </div>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 PetPals. All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <span class="logo-text">Pet<span class="highlight">Pals</span></span>
+                <i class="fas fa-paw logo-icon"></i>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="#">About Us</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Blog</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact Us</a>
+                    <a href="#">FAQs</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Cookie Policy</a>
+                </div>
+            </div>
+            <div class="social-links">
+                <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PetPals. All rights reserved.</p>
+        </div>
     </footer>
 
     <div class="modal" id="petModal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
+            <div class="modal-pet-icon">
+                <i id="modalPetIcon" class="fas"></i>
+            </div>
             <h2>Awesome! You chose <span id="selectedPet"></span></h2>
-            <p>Let's get to know your pet better.</p>
+            <p>Let's get to know your pet better and create a personalized care plan.</p>
+            <div class="features-list">
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Personalized diet plans</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Health monitoring</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Activity tracking</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Community support</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>AI-powered suggestions</span>
+                </div>
+            </div>
             <div class="action-buttons">
-                <button id="continueButton" class="btn primary">Continue</button>
+                <button id="continueButton" class="btn primary">Continue <i class="fas fa-arrow-right"></i></button>
                 <button id="cancelButton" class="btn secondary">Cancel</button>
             </div>
         </div>
