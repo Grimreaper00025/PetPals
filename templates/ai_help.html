@@ -5,6 +5,15 @@
 {% block styles %}
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_help.css') }}">
+<style>
+    .background-animation {
+    z-index: 1;
+    
+}
+.container{
+    z-index: 2;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -67,7 +76,95 @@
 <script>
 $(document).ready(function() {
     // Create ripple effects for bubbles
+    function createRipples() {
+        // Initial ripples for all bubbles
+        $('.bubble').each(function() {
+            createRippleForBubble($(this));
+        });
+        
+        // Set up regular ripple creation for all bubbles
+        setInterval(function() {
+            $('.bubble').each(function() {
+                // 50% chance to create a ripple for each bubble on each interval
+                if (Math.random() > 0.5) {
+                    createRippleForBubble($(this));
+                }
+            });
+        }, 2000); // Every 2 seconds check all bubbles
+    }
+
+    // Helper function for creating ripples
+    function createRippleForBubble(bubble) {
+        const bubbleWidth = bubble.width();
+        const bubbleHeight = bubble.height();
+        
+        const ripple = $('<div class="ripple"></div>');
+        ripple.css({
+            width: bubbleWidth,
+            height: bubbleHeight,
+            left: 0,
+            top: 0
+        });
+        
+        bubble.append(ripple);
+        
+        // Remove ripple after animation completes
+        setTimeout(function() {
+            ripple.remove();
+        }, 3000);
+    }
+
+    // Add dynamic bubble creation
+    function addRandomBubble() {
+        const colors = [
+            'var(--bubble-red)', 
+            'var(--bubble-blue)', 
+            'var(--bubble-green)', 
+            'var(--bubble-yellow)', 
+            'var(--bubble-purple)'
+        ];
+        
+        const size = Math.floor(Math.random() * 150) + 100; // Random size between 100-250px
+        const posX = Math.floor(Math.random() * 100); // Random X position
+        const posY = Math.floor(Math.random() * 100); // Random Y position
+        const colorIndex = Math.floor(Math.random() * colors.length);
+        const animDelay = Math.floor(Math.random() * 10);
+        
+        const bubble = $('<div class="bubble"></div>');
+        bubble.css({
+            width: size + 'px',
+            height: size + 'px',
+            left: posX + '%',
+            top: posY + '%',
+            background: colors[colorIndex],
+            animationDelay: animDelay + 's',
+            opacity: 0
+        });
+        
+        $('.background-animation').append(bubble);
+        
+        // Fade in the bubble
+        setTimeout(function() {
+            bubble.css('opacity', 1);
+        }, 100);
+        
+        // Remove bubble after some time
+        setTimeout(function() {
+            bubble.css('opacity', 0);
+            setTimeout(function() {
+                bubble.remove();
+            }, 1000);
+        }, 30000 + Math.random() * 15000); // Remove after 30-45 seconds
+    }
     
+    // Initialize ripples and bubbles
+    createRipples();
+    setInterval(addRandomBubble, 8000); // Add a new bubble every 8 seconds
+    for (let i = 0; i < 3; i++) {
+        setTimeout(addRandomBubble, i * 2000);
+    }
+
+
 
     // Initialize conversation variables
     let conversationHistory = [];
