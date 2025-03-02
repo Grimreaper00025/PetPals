@@ -643,9 +643,15 @@ def community():
     if category_filter:
         query["category"] = category_filter
     if animal_filter:
+        # Using an exact match; if needed, consider regex for case-insensitivity.
         query["animal_tags"] = animal_filter
     
     posts = list(db.posts.find(query))
+    
+    # Compute reply count for each post
+    for p in posts:
+        p['reply_count'] = db.posts.count_documents({"parent": p['_id']})
+    
     if sort_option == 'newest':
         posts.sort(key=lambda x: x.get('timestamp', datetime.min), reverse=True)
     elif sort_option == 'oldest':
@@ -776,7 +782,8 @@ def search_posts():
         "$or": [
             {"content": {"$regex": query_text, "$options": "i"}},
             {"user": {"$regex": query_text, "$options": "i"}},
-            {"category": {"$regex": query_text, "$options": "i"}}
+            {"category": {"$regex": query_text, "$options": "i"}},
+            {"animal_tags": {"$regex": query_text, "$options": "i"}}
         ]
     }
     if location_filter != 'worldwide':
@@ -784,7 +791,7 @@ def search_posts():
     else:
         search_query = search_conditions
     if animal_filter:
-        search_query["animal_tags"] = animal_filter
+        search_query["animal_tags"] = {"$regex": f"^{animal_filter}$", "$options": "i"}
     search_results = list(db.posts.find(search_query))
     categories = db.posts.distinct("category")
     current_user = get_current_user()

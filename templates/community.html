@@ -15,8 +15,6 @@
 
 <!-- Main container with proper width constraints -->
 <div class="main-container">
-  <!-- Header section with consistent background -->
-
   <div class="forum-container">
     <!-- Left Column: Top Controls -->
     <aside class="forum-sidebar">
@@ -75,6 +73,7 @@
       <div class="popular-tags">
         <h3 class="tag-section-title"><i class="fas fa-tags"></i> Popular Topics</h3>
         <div class="tags-cloud">
+          <!-- Note: Using the same query parameter "animal_filter" -->
           <span class="tag popular-tag" onclick="filterByTag('Dogs')">Dogs</span>
           <span class="tag popular-tag" onclick="filterByTag('Cats')">Cats</span>
           <span class="tag popular-tag" onclick="filterByTag('Training')">Training</span>
@@ -91,6 +90,7 @@
         <div class="panel-header">
           <h2><i class="fas fa-feather-alt"></i> Start a Discussion</h2>
         </div>
+        <!-- This form posts to the 'create_post' endpoint -->
         <form class="post-form" action="{{ url_for('create_post') }}" method="post">
           <div class="form-group">
             <input type="text" name="title" placeholder="What's on your mind?" required>
@@ -120,7 +120,8 @@
                   <span>Select Pet Types</span>
                   <i class="fas fa-chevron-down"></i>
                 </div>
-                <div class="dropdown-content" id="animalTagsDropdown">
+                <!-- Add inline style to hide by default; JS will toggle the "show" class -->
+                <div class="dropdown-content" id="animalTagsDropdown" style="display: none;">
                   {% for animal in available_animal_tags %}
                   <div class="dropdown-item" data-value="{{ animal }}" onclick="selectAnimalTag('{{ animal }}')">
                     <i class="fas fa-paw"></i> {{ animal|title }}
@@ -164,7 +165,12 @@
               
               <div class="post-category-tags">
                 {% if post.category %}
-                <span class="category-badge">{{ post.category }}</span>
+                  <span class="category-badge">{{ post.category|capitalize }}</span>
+                {% endif %}
+                {% if post.animal_tags %}
+                  {% for tag in post.animal_tags %}
+                    <span class="tag animal-tag"><i class="fas fa-paw"></i> {{ tag|capitalize }}</span>
+                  {% endfor %}
                 {% endif %}
                 <div class="post-actions-dropdown">
                   <button class="post-actions-btn">
@@ -195,7 +201,7 @@
               <div class="post-tags">
                 {% if post.animal_tags %}
                   {% for tag in post.animal_tags %}
-                  <span class="tag animal-tag"><i class="fas fa-paw"></i> {{ tag }}</span>
+                  <span class="tag animal-tag"><i class="fas fa-paw"></i> {{ tag|capitalize }}</span>
                   {% endfor %}
                 {% endif %}
               </div>
@@ -210,7 +216,8 @@
                 
                 <a href="{{ url_for('view_post', post_id=post._id) }}" class="stat-btn comment-btn">
                   <i class="far fa-comment"></i>
-                  <span>{{ post.replies|length if post.replies else 0 }}</span>
+                  <!-- Use the reply count computed in the route -->
+                  <span>{{ post.reply_count }}</span>
                 </a>
               </div>
               
@@ -249,95 +256,73 @@
   var forumHomeUrl = "{{ url_for('community') }}";
   var forumLikeUrl = "{{ url_for('like_post') }}";
   
-  // Filter functionality
+  // Filter functionality: use "animal_filter" parameter for pet type
   function applyFilters() {
     const location = document.getElementById('locationFilter').value;
     const animal = document.getElementById('animalFilter').value;
     const sort = document.getElementById('sortOption').value;
     
-    // Build the URL with query parameters
     let url = forumHomeUrl + '?';
     if (location && location !== 'worldwide') url += `location=${encodeURIComponent(location)}&`;
-    if (animal) url += `animal=${encodeURIComponent(animal)}&`;
+    if (animal) url += `animal_filter=${encodeURIComponent(animal)}&`;
     if (sort) url += `sort=${encodeURIComponent(sort)}&`;
     
-    // Remove trailing '&' or '?' if present
     url = url.replace(/[&?]$/, '');
-    
-    // Redirect to the filtered URL
     window.location.href = url;
   }
   
   // Apply filters when button is clicked
   document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters);
   
-  // Search functionality
+  // Search functionality: adjust parameter if needed
   document.getElementById('searchButton').addEventListener('click', function() {
     const query = document.getElementById('searchQuery').value.trim();
     if (query) {
-      window.location.href = forumHomeUrl + '?search=' + encodeURIComponent(query);
+      window.location.href = forumHomeUrl + '?q=' + encodeURIComponent(query);
     }
   });
   
-  // Also allow searching by pressing Enter
   document.getElementById('searchQuery').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
       document.getElementById('searchButton').click();
     }
   });
   
-  // Filter by tag when clicking on popular topics
+  // Filter by popular tag using "animal_filter"
   function filterByTag(tag) {
-    window.location.href = forumHomeUrl + '?tag=' + encodeURIComponent(tag);
+    window.location.href = forumHomeUrl + '?animal_filter=' + encodeURIComponent(tag);
   }
   
-  // Toggle dropdown for animal tags
+  // Toggle dropdown for animal tags (using class toggle)
   function toggleDropdown() {
     const dropdown = document.getElementById('animalTagsDropdown');
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    dropdown.classList.toggle('show');
   }
   
   // Handle animal tag selection
   function selectAnimalTag(animal) {
     const tagsInput = document.getElementById('animalTagsInput');
     const selectedTags = document.getElementById('selectedTags');
-    
-    // Get current tags
     let tags = tagsInput.value ? tagsInput.value.split(',') : [];
-    
-    // Check if tag is already selected
     if (!tags.includes(animal)) {
       tags.push(animal);
-      
-      // Add visual tag
       const tagElement = document.createElement('span');
       tagElement.className = 'tag animal-tag';
       tagElement.innerHTML = `<i class="fas fa-paw"></i> ${animal} <i class="fas fa-times remove" onclick="removeTag('${animal}')"></i>`;
       selectedTags.appendChild(tagElement);
     }
-    
-    // Update hidden input
     tagsInput.value = tags.join(',');
-    
-    // Hide dropdown
-    document.getElementById('animalTagsDropdown').style.display = 'none';
+    // Remove "show" class to hide dropdown
+    document.getElementById('animalTagsDropdown').classList.remove('show');
   }
   
   // Remove a selected tag
   function removeTag(animal) {
     const tagsInput = document.getElementById('animalTagsInput');
     const selectedTags = document.getElementById('selectedTags');
-    
-    // Get current tags
     let tags = tagsInput.value ? tagsInput.value.split(',') : [];
-    
-    // Remove the tag
     tags = tags.filter(tag => tag !== animal);
-    
-    // Update hidden input
     tagsInput.value = tags.join(',');
-    
-    // Rebuild visual tags
     selectedTags.innerHTML = '';
     tags.forEach(tag => {
       const tagElement = document.createElement('span');
@@ -352,20 +337,16 @@
     fetch(forumLikeUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ post_id: postId }),
+      body: JSON.stringify({ post_id: postId })
     })
     .then(response => response.json())
     .then(data => {
-      if (data.status === 'success') {
+      if (!data.error) {
         const likeBtn = document.getElementById(`like-btn-${postId}`);
         const likeCount = document.getElementById(`like-count-${postId}`);
-        
-        // Update like count
         likeCount.textContent = data.likes;
-        
-        // Toggle active class
         if (data.action === 'liked') {
           likeBtn.classList.add('active');
           likeBtn.querySelector('i').classList.replace('far', 'fas');
@@ -373,9 +354,7 @@
           likeBtn.classList.remove('active');
           likeBtn.querySelector('i').classList.replace('fas', 'far');
         }
-        
-        // Show toast notification
-        showToast(data.message);
+        showToast("Like updated!");
       }
     })
     .catch(error => {
@@ -388,10 +367,8 @@
   function showToast(message) {
     const toast = document.getElementById('toast-notification');
     const toastMessage = document.getElementById('toast-message');
-    
     toastMessage.textContent = message;
     toast.classList.add('visible');
-    
     setTimeout(() => {
       toast.classList.remove('visible');
     }, 3000);
@@ -401,10 +378,7 @@
   function sharePost(postId, event) {
     event.preventDefault();
     event.stopPropagation();
-    
     const postUrl = `${window.location.origin}${forumHomeUrl}post/${postId}`;
-    
-    // Use Web Share API if available
     if (navigator.share) {
       navigator.share({
         title: 'Check out this post on PetPals',
@@ -419,28 +393,29 @@
     }
   }
   
-  // Fallback sharing method
+  // Fallback share method: copy link to clipboard
   function fallbackShare(url) {
-    // Copy to clipboard
     const tempInput = document.createElement('input');
     tempInput.value = url;
     document.body.appendChild(tempInput);
     tempInput.select();
     document.execCommand('copy');
     document.body.removeChild(tempInput);
-    
     showToast('Link copied to clipboard!');
   }
   
-  // Close all dropdowns when clicking elsewhere
+  // Close dropdown if clicking outside of pet tag dropdown
   document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('animalTagsDropdown');
     const header = document.getElementById('animalTagsHeader');
-    
     if (!header.contains(event.target) && !dropdown.contains(event.target)) {
-      dropdown.style.display = 'none';
+      dropdown.classList.remove('show');
     }
   });
+  
+  // Initialize functions for existing elements
+  window.likePost = likePost;
+  window.sharePost = sharePost;
 </script>
 <script src="{{ url_for('static', filename='js/forum.js') }}"></script>
 {% endblock %}
