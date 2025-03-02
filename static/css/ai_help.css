@@ -171,7 +171,7 @@ body {
 
 /* Main Container */
 .container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 20px auto;
     background-color: white;
     border-radius: 20px;
@@ -268,53 +268,9 @@ button:hover::after {
 }
 
 /* Loading Animation */
-.loading-container {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(249, 249, 249, 0.7);
-}
 
-.paw-container {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
-.logo-icon {
-    font-size: 60px;
-    color: var(--primary);
-    animation: pulse 1.5s infinite ease-in-out;
-    position: absolute;
-    z-index: 2;
-}
 
-.wave {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 2px solid var(--primary);
-    opacity: 0;
-    animation: wave 1.5s infinite ease-out;
-}
-
-.wave:nth-child(2) {
-    animation-delay: 0.5s;
-}
-
-.wave:nth-child(3) {
-    animation-delay: 1s;
-}
 
 @keyframes pulse {
     0% {
@@ -481,15 +437,61 @@ footer {
 }
 
 
-.chat-container {
+/* Two-column layout for larger screens */
+.chat-layout {
     display: flex;
     flex-direction: column;
-    height: 600px;
+    gap: 20px;
+    width: 100%;
+}
+
+/* Chat container styles */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 600px; /* Increased height */
     border-radius: 10px;
     overflow: hidden;
     box-shadow: var(--shadow-md);
 }
 
+/* Past conversations styles */
+.past-conversations-container {
+    width: 100%;
+    padding: 15px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+}
+
+.past-conversations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 500px; /* Adjusted height */
+    overflow-y: auto;
+}
+
+/* Media query for larger screens */
+@media (min-width: 992px) {
+    .chat-layout {
+        flex-direction: row;
+        align-items: stretch;
+    }
+    
+    .past-conversations-container {
+        width: 30%;
+        max-width: 350px;
+    }
+    
+    .chat-container {
+        width: 70%;
+        height: 700px; /* Even taller on desktop */
+    }
+}
+
+/* Ensure chat messages take up available space */
 .chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -498,6 +500,15 @@ footer {
     display: flex;
     flex-direction: column;
 }
+
+/* Keep input at bottom */
+.chat-input {
+    display: flex;
+    padding: 15px;
+    background-color: white;
+    border-top: 1px solid var(--gray);
+}
+
 
 .welcome-message {
     background-color: rgba(108, 99, 255, 0.1);
@@ -537,12 +548,7 @@ footer {
     border-bottom-left-radius: 5px;
 }
 
-.chat-input {
-    display: flex;
-    padding: 10px;
-    background-color: white;
-    border-top: 1px solid var(--gray);
-}
+
 
 .chat-input textarea {
     flex: 1;
@@ -618,22 +624,6 @@ footer {
     color: var(--text-dark);
 }
 
-.past-conversations-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.past-conversation-item {
-    background-color: var(--gray-light);
-    border-radius: 10px;
-    padding: 12px 15px;
-    cursor: pointer;
-    transition: all var(--animation-speed) ease;
-    border-left: 3px solid transparent;
-}
 
 .past-conversation-item:hover {
     background-color: rgba(108, 99, 255, 0.1);
