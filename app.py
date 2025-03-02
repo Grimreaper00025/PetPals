@@ -20,6 +20,7 @@ load_dotenv()
 # Access the API key
 api_key = os.getenv("GEMINI_API_KEY")
 SERP_API_KEY = os.getenv("SERP_API_KEY")
+MONGO_URI = os.getenv("MONGO_URI")
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -37,6 +38,8 @@ app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY") or "super-secret-key"
 jwt = JWTManager(app)
 # ------------------
 
+app.config["DEBUG"] = False
+
 # Helper function – retrieves the current user from JWT
 def get_current_user():
     try:
@@ -52,7 +55,7 @@ def get_current_user():
     return {"username": "Guest", "location": "Unknown", "email": "", "avatar_color": "#4e73df"}
 
 # MongoDB connection
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient(MONGO_URI)
 db = client['petpals_dashboard']
 users = db['users']
 pets = db['pets']
@@ -1449,4 +1452,4 @@ def init_db():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
