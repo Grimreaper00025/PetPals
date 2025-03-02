@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetPals - Community Forum</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
+</head>
+<body>
+    <div class="background-animation">
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
+    </div>
+
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="{{ url_for('home') }}" class="logo-text">Pet<span class="highlight">Pals</span>
+                <i class="fas fa-paw"></i></a>
+            </div>
+            <div class="user-info">
+                {% if current_user and current_user.username != 'Guest' %}
+                <a href="{{ url_for('forum.user_profile', username=current_user.username) }}">
+                    <i class="fas fa-user-circle"></i> {{ current_user.username }}
+                </a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('signup') }}">Sign Up</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="page-header">
+            <h1 class="page-title">Community Forum</h1>
+            <p>Connect with pet lovers, share your experiences, and get advice from our community</p>
+        </section>
+
+        <section class="top-controls">
+            <div class="search-bar">
+                <input type="text" id="searchQuery" placeholder="Search posts, topics, or users..." value="{{ search_query if search_query else '' }}">
+            </div>
+            <div class="filters-container">
+                <div class="location-filter-container">
+                    <label for="locationFilter">Location:</label>
+                    <div class="location-filter-wrapper">
+                        <select id="locationFilter">
+                            <option value="worldwide" {% if location_filter == 'worldwide' %}selected{% endif %}>Worldwide</option>
+                            {% for location in available_locations %}
+                            <option value="{{ location }}" {% if location_filter == location %}selected{% endif %}>{{ location }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="animal-filter-container">
+                    <label for="animalFilter">Pet Type:</label>
+                    <div class="animal-filter-wrapper">
+                        <select id="animalFilter">
+                            <option value="" {% if not animal_filter %}selected{% endif %}>All Pets</option>
+                            {% for animal in available_animal_tags %}
+                            <option value="{{ animal }}" {% if animal_filter == animal %}selected{% endif %}>{{ animal|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="sort-controls">
+                    <label for="sortOption">Sort By:</label>
+                    <div class="select-wrapper">
+                        <select id="sortOption">
+                            <option value="newest" {% if sort_option == 'newest' %}selected{% endif %}>Newest</option>
+                            <option value="oldest" {% if sort_option == 'oldest' %}selected{% endif %}>Oldest</option>
+                            <option value="most_liked" {% if sort_option == 'most_liked' %}selected{% endif %}>Most Liked</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="control-panel">
+            <form class="post-form" action="{{ url_for('forum.create_post') }}" method="post">
+                <input type="text" name="title" placeholder="Post Title" required>
+                <textarea name="content" placeholder="Share your thoughts, questions, or advice..." required></textarea>
+                
+                <div class="form-footer">
+                    <div class="category-select">
+                        <label for="category">Category:</label>
+                        <select name="category" id="category">
+                            <option value="general">General Discussion</option>
+                            <option value="health">Pet Health</option>
+                            <option value="training">Training Tips</option>
+                            <option value="nutrition">Nutrition</option>
+                            <option value="adoption">Adoption</option>
+                            <option value="products">Pet Products</option>
+                        </select>
+                    </div>
+                    
+                    <div class="animal-tags-select">
+                        <label for="animalTagsHeader">Pet Tags:</label>
+                        <div class="dropdown-header" id="animalTagsHeader">Select Pet Types <i class="fas fa-chevron-down"></i></div>
+                        <div class="dropdown-content" id="animalTagsDropdown">
+                            {% for animal in available_animal_tags %}
+                            <div class="dropdown-item" data-value="{{ animal }}">{{ animal|title }}</div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="animal_tags" id="animalTagsInput">
+                        <div class="selected-tags" id="selectedTags"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn">
+                        <i class="fas fa-paper-plane"></i> Post
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="posts-container">
+            {% if posts %}
+                {% for post in posts %}
+                <div class="post" id="post-{{ post._id }}">
+                    <div class="post-header" onclick="window.location.href='{{ url_for('forum.view_post', post_id=post._id) }}'">
+                        <div class="post-info">
+                            <h3 class="post-title">
+                                <a href="{{ url_for('forum.view_post', post_id=post._id) }}">{{ post.title }}</a>
+                            </h3>
+                            <div class="post-metadata">
+                                <div class="post-user">
+                                    <i class="fas fa-user" style="color: {{ post.avatar_color }}"></i>
+                                    <a href="{{ url_for('forum.user_profile', username=post.user) }}">{{ post.user }}</a>
+                                </div>
+                                <div class="post-tags">
+                                    {% if post.category %}
+                                    <span class="tag category-tag">{{ post.category }}</span>
+                                    {% endif %}
+                                    {% if post.animal_tags %}
+                                        {% for tag in post.animal_tags %}
+                                        <span class="tag animal-tag">{{ tag }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-location">
+                            <i class="fas fa-map-marker-alt"></i> {{ post.location }}
+                        </div>
+                    </div>
+                    <div class="post-footer">
+                        <div class="post-timestamp">
+                            <i class="far fa-clock"></i> {{ post.timestamp.strftime('%b %d, %Y') }}
+                            {% if post.replies %}
+                            <span class="reply-count"><i class="far fa-comment"></i> {{ post.replies|length }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="post-actions">
+                            <button class="action-btn like-btn {% if current_user.username in post.liked_by %}active{% endif %}" onclick="likePost('{{ post._id }}')">
+                                <i class="far fa-heart"></i> <span id="like-count-{{ post._id }}">{{ post.likes }}</span>
+                            </button>
+                            <button class="action-btn" onclick="sharePost('{{ post._id }}', event)">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            {% if current_user.username == post.user %}
+                            <form action="{{ url_for('forum.delete_post', post_id=post._id) }}" method="post" style="display: inline;">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this post?')">
+                                    <i class="far fa-trash-alt"></i> Delete
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comment-slash"></i>
+                    <h3>No posts yet</h3>
+                    <p>Be the first to start a conversation!</p>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <span class="logo-text">Pet<span class="highlight">Pals</span></span>
+                <i class="fas fa-paw logo-icon"></i>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="#">About Us</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Blog</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact Us</a>
+                    <a href="#">FAQs</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Cookie Policy</a>
+                </div>
+            </div>
+            <div class="social-links">
+                <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PetPals. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Link copied to clipboard!</div>
+
+    <script>
+        const forumHomeUrl = "{{ url_for('forum.forum_home') }}";
+        const forumLikeUrl = "{{ url_for('forum.like_post') }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/forum.js') }}"></script>
+</body>
+</html>
