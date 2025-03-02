@@ -809,6 +809,7 @@ def view_post(post_id):
     current_user = get_current_user()
     return render_template('post_detail.html', post=post, current_user=current_user)
 
+import json 
 
 @app.route('/ai_help', methods=['GET', 'POST'])
 def ai_help():
@@ -816,14 +817,67 @@ def ai_help():
     if not user:
         return redirect(url_for('login'))
         
-    response = None
-    
     if request.method == 'POST':
-        question = request.form.get('question')
-        response = Gemini_client.models.generate_content(
-            model="gemini-2.0-flash", contents=f"As a pet care expert, answer this question: {question}")
+        try:
+            # Get the new question and conversation history
+            question = request.form.get('question')
+            conversation_history = request.form.get('conversation_history', '[]')
+            
+            # Parse the conversation history from JSON
+            try:
+                history = json.loads(conversation_history)
+            except:
+                history = []
+            
+            # Create a formatted conversation for Gemini
+            formatted_conversation = ""
+            for entry in history:
+                if entry['role'] == 'user':
+                    formatted_conversation += f"User: {entry['content']}\n\n"
+                else:
+                    formatted_conversation += f"Assistant: {entry['content']}\n\n"
+            
+            # Create the prompt with conversation context
+            if history:
+                prompt = f"""As a pet care expert, continue this conversation. Here's the conversation history:
+
+{formatted_conversation}
+
+User: {question}
+
+IMPORTANT: Do not use any Markdown formatting in your response. Do not use asterisks (*) for emphasis or formatting. 
+Instead, use plain text with paragraph breaks for organization. Use ALL CAPS for headings or important points."""
+            else:
+                prompt = f"""As a pet care expert, answer this question: {question}
+                
+IMPORTANT: Do not use any Markdown formatting in your response. Do not use asterisks (*) for emphasis or formatting. 
+Instead, use plain text with paragraph breaks for organization. Use ALL CAPS for headings or important points."""
+            
+            # Generate response
+            response = Gemini_client.models.generate_content(
+                model="gemini-2.0-flash", contents=prompt)
+            
+            answer_text = response.text
+            
+            # Add the new exchange to history
+            history.append({"role": "user", "content": question})
+            history.append({"role": "assistant", "content": answer_text})
+            
+            # Return JSON response with answer and updated history
+            return jsonify({
+                "raw_schedule": answer_text,
+                "conversation_history": history
+            })
+            
+        except Exception as e:
+            print(f"Error in ai_help: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({"error": str(e), "raw_schedule": f"Error: {str(e)}"})
     
-    return render_template('ai_help.html', response=response.text if response else None)
+    # For GET requests, just render the template
+    return render_template('ai_help.html')
+
 
 @app.route('/generate_schedule', methods=['POST'])
 def generate_schedule():
