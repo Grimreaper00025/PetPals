@@ -1,0 +1,45 @@
+{% extends "base-market.html" %}
+
+{% block title %}{{ item.name }} - Pet Marketplace{% endblock %}
+
+{% block content %}
+<div class="product-detail-container">
+    <div class="product-detail-image">
+        <img src="{{ item.image_url }}" alt="{{ item.name }}">
+    </div>
+    <div class="product-detail-info">
+        <h1 class="product-detail-title">{{ item.name }}</h1>
+        <p class="product-detail-price">${{ item.price }}</p>
+        <p class="product-detail-description">{{ item.description }}</p>
+        <button class="product-detail-button" data-id="{{ item._id }}">Add to Cart</button>
+    </div>
+</div>
+
+<script>
+    document.querySelector('.product-detail-button').addEventListener('click', function() {
+        const itemId = this.getAttribute('data-id');
+        
+        // Create a form data object
+        const formData = new FormData();
+        formData.append('item_id', itemId);
+        
+        // Send AJAX request to add the item to the cart
+        fetch('/add_to_cart', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Item added to cart successfully!');
+            } else {
+                alert('Failed to add item to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the item to cart.');
+        });
+    });
+</script>
+{% endblock %}

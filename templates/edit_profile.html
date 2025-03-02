@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="edit-profile-container">
+    <h1>Edit Profile</h1>
+    
+    <form method="post" class="edit-profile-form" enctype="multipart/form-data">
+        <div class="profile-image-upload">
+            <div class="current-profile-image">
+                <img src="{{ user.avatar_url|default('https://i.pravatar.cc/150?img=32') }}" alt="{{ user.name }}">
+            </div>
+            <div class="image-upload-controls">
+                <label for="profile_image">Change Profile Picture</label>
+                <input type="file" id="profile_image" name="profile_image" accept="image/*">
+                <div class="image-preview">
+                    <p class="no-image">No new image selected</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ user.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio" rows="4">{{ user.bio|default('') }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn submit-btn">Save Changes</button>
+            <a href="{{ url_for('dashboard') }}" class="btn cancel-btn">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.getElementById('profile_image');
+        const imagePreview = document.querySelector('.image-preview');
+        const noImageText = document.querySelector('.no-image');
+        
+        if (imageInput) {
+            imageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        noImageText.style.display = 'none';
+                        imagePreview.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview" class="preview-image">
+                            <p class="file-name">${file.name}</p>
+                        `;
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.innerHTML = `<p class="no-image">No image selected</p>`;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

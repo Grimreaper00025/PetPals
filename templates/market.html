@@ -1,0 +1,94 @@
+{% extends "base-market.html" %}
+
+{% block title %}Pet Marketplace - Market{% endblock %}
+
+{% block content %}
+
+<div class="market-container">
+    <h1 class="market-title">Pet Marketplace</h1>
+
+    <div class="search-container">
+        <form action="{{ url_for('market') }}" method="get" class="search-form">
+            <input type="text" name="search" placeholder="Search for pet products..." class="search-input" 
+                   value="{{ request.args.get('search', '') }}">
+            <button type="submit" class="search-button">
+                <i class="fa fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    <div class="filters-container">
+        <form action="{{ url_for('market') }}" method="get" class="filter-form">
+            <input type="hidden" name="search" value="{{ request.args.get('search', '') }}">
+
+            <div class="filter-group">
+                <label for="category">Category:</label>
+                <select name="category" id="category" class="filter-select">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}"
+                            {% if request.args.get('category') == category %}selected{% endif %}>
+                            {{ category.capitalize() }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="sort">Sort By:</label>
+                <select name="sort" id="sort" class="filter-select">
+                    <option value="name" {% if request.args.get('sort') == 'name' %}selected{% endif %}>Name</option>
+                    <option value="price" {% if request.args.get('sort') == 'price' %}selected{% endif %}>Price</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="order">Order:</label>
+                <select name="order" id="order" class="filter-select">
+                    <option value="asc" {% if request.args.get('order') == 'asc' %}selected{% endif %}>Ascending</option>
+                    <option value="desc" {% if request.args.get('order') == 'desc' %}selected{% endif %}>Descending</option>
+                </select>
+            </div>
+
+            <button type="submit" class="filter-button">Apply Filters</button>
+        </form>
+    </div>
+
+    <div class="item-grid">
+        {% for item in items %}
+        <div class="item-card">
+            <div class="item-image">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+            </div>
+            <div class="item-content">
+                <h2 class="item-title">{{ item.name }}</h2>
+                <p class="item-price">${{ item.price }}</p>
+                <p class="item-description">
+                    {{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}
+                </p>
+                <div class="item-action">
+                    <a href="{{ url_for('item', item_id=item._id) }}" class="btn view-details-btn">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.querySelector('.filter-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const searchParams = new URLSearchParams(formData);
+        window.location.search = searchParams.toString();
+    });
+
+    document.querySelector('.search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const searchValue = this.querySelector('.search-input').value;
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('search', searchValue);
+        window.location.search = urlParams.toString();
+    });
+</script>
+{% endblock %}

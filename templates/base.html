@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pet Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Add FullCalendar CSS and JS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+
+
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar collapsed">
+            <div class="sidebar-header">
+                <h1>PetCare</h1>
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="{{ url_for('dashboard') }}">
+                            <span class="icon"><i class="fas fa-home"></i></span>
+                            <span class="text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('services') }}">
+                            <span class="icon"><i class="fas fa-concierge-bell"></i></span>
+                            <span class="text">Services</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('community') }}">
+                            <span class="icon"><i class="fas fa-users"></i></span>
+                            <span class="text">Community</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('ai_help') }}">
+                            <span class="icon"><i class="fas fa-robot"></i></span>
+                            <span class="text">AI Help</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar">
+                </div>
+                <div class="user-details">
+                    <p class="user-name">Patrick Bateman</p>
+                    <p class="user-email">patrick@example.com</p>
+                </div>
+            </div>
+        </aside>
+         
+        <main class="content">
+           
+<header class="page-header">
+    <div class="header-content">
+      <h1 class="site-title">PetPals</h1>
+      <nav class="header-nav">
+        <ul>
+          <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+          <li><a href="{{ url_for('market') }}">Market</a></li>
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+            
+            {% block content %}
+            
+            {% endblock %}
+        </main>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    // Toggle sidebar on button click
+    menuToggle.addEventListener('click', function() {
+        // If sidebar is hover-expanded, remove that class and add collapsed
+        if (sidebar.classList.contains('hover-expanded')) {
+            sidebar.classList.remove('hover-expanded');
+            sidebar.classList.add('collapsed');
+        } else {
+            // Otherwise just toggle the collapsed class
+            sidebar.classList.toggle('collapsed');
+        }
+    });
+    
+    // Open sidebar on hover
+    sidebar.addEventListener('mouseenter', function() {
+        if (sidebar.classList.contains('collapsed')) {
+            sidebar.classList.add('hover-expanded');
+        }
+    });
+    
+    // Close sidebar when mouse leaves
+    sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('hover-expanded');
+    });
+});
+
+    
+    
+    </script>
+</body>
+</html>
