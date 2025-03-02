@@ -601,8 +601,6 @@ def services():
         {"name": "Pet Boarding", "icon": "fa-home", "description": "Kennels, pet hotels, in-home sitters, and doggy daycare"},
         {"name": "Dog Parks", "icon": "fa-tree", "description": "Dog parks, pet-friendly restaurants, cafes, and hotels"},
         {"name": "Pet Adoption", "icon": "fa-heart", "description": "Shelters, breed-specific rescues, and foster organizations"},
-        {"name": "Pet Transportation", "icon": "fa-car", "description": "Pet taxis, pet-friendly rideshare, and transport services"},
-        {"name": "Pet Specialty Services", "icon": "fa-camera", "description": "Pet photography, massage therapy, and hydrotherapy"}
     ]
     return render_template("services.html", services=services_list)
 
@@ -641,17 +639,25 @@ def community():
     if location_filter != 'worldwide':
         query["location"] = location_filter
     if category_filter:
-        query["category"] = category_filter
+        query["category"] = {"$regex": f"^{category_filter}$", "$options": "i"}
     if animal_filter:
-        query["animal_tags"] = animal_filter
+        # Use case-insensitive regex for animal tags
+        query["animal_tags"] = {"$regex": f"^{animal_filter}$", "$options": "i"}
     
     posts = list(db.posts.find(query))
+    
+    # Compute reply count for each post
+    for p in posts:
+        p['reply_count'] = db.posts.count_documents({"parent": p['_id']})
+    
     if sort_option == 'newest':
         posts.sort(key=lambda x: x.get('timestamp', datetime.min), reverse=True)
     elif sort_option == 'oldest':
         posts.sort(key=lambda x: x.get('timestamp', datetime.max))
     elif sort_option == 'most_liked':
         posts.sort(key=lambda x: x.get('likes', 0), reverse=True)
+    elif sort_option == 'most_active':
+        posts.sort(key=lambda x: x.get('reply_count', 0), reverse=True)
     
     categories = db.posts.distinct("category")
     current_user = get_current_user()
@@ -749,18 +755,29 @@ def create_reply():
 
 @app.route('/like_post', methods=['POST'])
 def like_post():
-    post_id = request.form.get('post_id')
+    post_id = request.form.get('post_id') or request.json.get('post_id')
     if not post_id:
         return jsonify({"error": "Post ID not provided"}), 400
+    
     post = db.posts.find_one({"_id": post_id})
     if not post:
         return jsonify({"error": "Post not found"}), 404
+    
     current_user = get_current_user()
     user_id = current_user['username']
+    
+    # Check if user already liked the post
     if user_id in post.get('liked_by', []):
-        db.posts.update_one({"_id": post_id}, {"$inc": {"likes": -1}, "$pull": {"liked_by": user_id}})
+        # Unlike the post
+        db.posts.update_one({"_id": post_id}, {"$pull": {"liked_by": user_id}})
+        db.posts.update_one({"_id": post_id}, {"$set": {"likes": len(post.get('liked_by', [])) - 1}})
+        liked = False
     else:
-        db.posts.update_one({"_id": post_id}, {"$inc": {"likes": 1}, "$push": {"liked_by": user_id}})
+        # Like the post
+        db.posts.update_one({"_id": post_id}, {"$push": {"liked_by": user_id}})
+        db.posts.update_one({"_id": post_id}, {"$set": {"likes": len(post.get('liked_by', [])) + 1}})
+        liked = True
+    
     updated_post = db.posts.find_one({"_id": post_id})
     return jsonify({"likes": updated_post.get("likes", 0), "liked": user_id in updated_post.get('liked_by', [])})
 
@@ -770,24 +787,41 @@ def search_posts():
     query_text = request.args.get('q', '')
     location_filter = request.args.get('location', 'worldwide')
     animal_filter = request.args.get('animal_filter', None)
+    
     if not query_text:
         return redirect(url_for('community', location=location_filter))
+    
+    # Only search in main posts, not replies
     search_conditions = {
-        "$or": [
-            {"content": {"$regex": query_text, "$options": "i"}},
-            {"user": {"$regex": query_text, "$options": "i"}},
-            {"category": {"$regex": query_text, "$options": "i"}}
+        "$and": [
+            {"parent": None},  # This ensures we only get main posts, not replies
+            {"$or": [
+                {"title": {"$regex": query_text, "$options": "i"}},
+                {"content": {"$regex": query_text, "$options": "i"}},
+                {"user": {"$regex": query_text, "$options": "i"}},
+                {"category": {"$regex": query_text, "$options": "i"}},
+                {"animal_tags": {"$regex": query_text, "$options": "i"}}
+            ]}
         ]
     }
+    
     if location_filter != 'worldwide':
         search_query = {"$and": [{"location": location_filter}, search_conditions]}
     else:
         search_query = search_conditions
+    
     if animal_filter:
-        search_query["animal_tags"] = animal_filter
+        search_query = {"$and": [search_query, {"animal_tags": {"$regex": f"^{animal_filter}$", "$options": "i"}}]}
+    
     search_results = list(db.posts.find(search_query))
+    
+    # Compute reply count for each post
+    for p in search_results:
+        p['reply_count'] = db.posts.count_documents({"parent": p['_id']})
+    
     categories = db.posts.distinct("category")
     current_user = get_current_user()
+    
     return render_template(
         'community.html',
         posts=search_results,

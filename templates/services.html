@@ -4,6 +4,14 @@
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/services.css') }}">
+<style>
+  .background-animation {
+  z-index: 1;
+  }
+  .container{
+    z-index: 2;
+  }
+</style>
 <div class="pet-paw-bg">
   <i class="fas fa-paw"></i>
 </div>
@@ -19,7 +27,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <div class="container" style="background: transparent;">
+  <div class="container" >
     <div id="locationStatus" class="location-status text-center mx-auto">
       <div class="loading-spinner"></div> Getting your location...
     </div>

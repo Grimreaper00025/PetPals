@@ -552,6 +552,10 @@
   cursor: default;
 }
 
+.dropdown-content.show {
+  display: block !important;
+}
+
 .tag i.remove {
   cursor: pointer;
   transition: all 0.2s ease;
