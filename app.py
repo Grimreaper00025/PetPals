@@ -11,6 +11,10 @@ from datetime import datetime
 from dotenv import load_dotenv
 from google import genai
 
+
+import uuid
+from datetime import datetime, timedelta
+
 load_dotenv()
 
 # Access the API key
@@ -18,6 +22,33 @@ api_key = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+# MongoDB connection
+from flask_jwt_extended import (
+    JWTManager, create_access_token, set_access_cookies,
+    unset_jwt_cookies, get_jwt_identity, jwt_required, verify_jwt_in_request
+)
+
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False  # Enable CSRF in production!
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY") or "super-secret-key"
+jwt = JWTManager(app)
+# ------------------
+
+# Helper function – retrieves the current user from JWT
+def get_current_user():
+    try:
+        verify_jwt_in_request(optional=True)
+    except Exception:
+        return {"username": "Guest", "location": "Unknown", "email": "", "avatar_color": "#4e73df"}
+    identity = get_jwt_identity()
+    if identity:
+        user = users.find_one({"_id": ObjectId(identity)})
+        if user:
+            user['username'] = user.get('name', 'Guest')
+            return user
+    return {"username": "Guest", "location": "Unknown", "email": "", "avatar_color": "#4e73df"}
 
 # MongoDB connection
 client = MongoClient('mongodb://localhost:27017/')
@@ -31,7 +62,8 @@ bcrypt = Bcrypt(app)
 # Configure Gemini AI
 Gemini_client = genai.Client(api_key=api_key)
 
-# Pet types and their breeds
+
+# Define pet breeds and forum globals:
 PET_BREEDS = {
     "dog": ["Labrador", "Golden Retriever", "German Shepherd", "Bulldog", "Poodle", "Beagle", "Chihuahua", "Husky", "Dachshund", "Mixed Breed"],
     "cat": ["Persian", "Maine Coon", "Siamese", "Bengal", "Ragdoll", "Scottish Fold", "Sphynx", "Abyssinian", "British Shorthair", "Mixed Breed"],
@@ -40,16 +72,16 @@ PET_BREEDS = {
     "rabbit": ["Holland Lop", "Mini Rex", "Dutch", "Netherland Dwarf", "Lionhead", "English Angora", "Flemish Giant", "Rex", "Mini Lop", "Mixed Breed"],
     "hamster": ["Syrian", "Dwarf Campbell", "Winter White", "Roborovski", "Chinese", "Other"]
 }
-
-# Helper function to check if user is logged in
-def get_current_user():
-    if 'user_id' in session:
-        return users.find_one({"_id": ObjectId(session['user_id'])})
-    return None
+available_animal_tags = list(PET_BREEDS.keys())
+available_locations = ["New York", "Los Angeles", "Chicago", "Boston", "Miami", "Seattle", "Austin", "Denver"]
 
 # Routes
 @app.route('/')
 def home():
+    user = get_current_user()
+    # If a valid user is logged in (i.e. not the default guest), redirect to dashboard.
+    if user and user.get("username") != "Guest":
+        return redirect(url_for("dashboard"))
     return render_template('home.html')
 
 @app.route('/get_breeds/<pet_type>')
@@ -60,29 +92,24 @@ def get_breeds(pet_type):
 
 @app.route('/dashboard')
 def dashboard():
-    user = get_current_user()
-    if not user:
+    current_user = get_current_user()
+    if current_user.get("username") == "Guest":
         return redirect(url_for('login'))
-    
-    # Get user's pets
-    user_pets = list(pets.find({"user_id": ObjectId(session['user_id'])}))
-    
-    # Sort events by date if they exist
-    if 'events' in user:
-        user['events'].sort(key=lambda x: x['date'])
-    
-    return render_template('dashboard.html', user=user, pets=user_pets)
+    user_id = get_jwt_identity()
+    user_pets = list(pets.find({"user_id": ObjectId(user_id)}))
+    if 'events' in current_user:
+        current_user['events'].sort(key=lambda x: x['date'])
+    return render_template('dashboard.html', user=current_user, pets=user_pets)
 
+# Signup – if already logged in, redirect to dashboard; else create JWT token.
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if get_current_user().get("username") != "Guest":
+        return redirect(url_for("dashboard"))
     if request.method == 'POST':
         existing_user = users.find_one({'email': request.form.get('email')})
-        
         if existing_user is None:
-            # Hash the password
             hashed_password = bcrypt.generate_password_hash(request.form.get('password')).decode('utf-8')
-            
-            # Create new user
             user_id = users.insert_one({
                 'name': request.form.get('name'),
                 'email': request.form.get('email'),
@@ -93,49 +120,47 @@ def signup():
                 'events': [],
                 'created_at': datetime.now()
             }).inserted_id
-            
-            # Add pet data if available
             if 'pet_data' in session:
                 pet_data = session.pop('pet_data')
                 pet_data['user_id'] = user_id
                 pet_data['owner'] = request.form.get('name')
                 pets.insert_one(pet_data)
-            
-            # Log the user in
-            session['user_id'] = str(user_id)
+            session.clear()
+            access_token = create_access_token(identity=str(user_id))
+            response = redirect(url_for('dashboard'))
+            set_access_cookies(response, access_token)
             flash('Account created successfully!', 'success')
-            return redirect(url_for('dashboard'))
-            
+            return response
         flash('Email already exists!', 'danger')
-    
     return render_template('signup.html')
 
+# Login – if already logged in, redirect to dashboard; else create JWT token.
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if get_current_user().get("username") != "Guest":
+        return redirect(url_for("dashboard"))
     if request.method == 'POST':
         user = users.find_one({'email': request.form.get('email')})
-        
         if user and bcrypt.check_password_hash(user['password'], request.form.get('password')):
-            session['user_id'] = str(user['_id'])
-            
-            # Add pet data if available
+            access_token = create_access_token(identity=str(user['_id']))
+            response = redirect(url_for('dashboard'))
+            set_access_cookies(response, access_token)
             if 'pet_data' in session:
                 pet_data = session.pop('pet_data')
                 pet_data['user_id'] = user['_id']
                 pet_data['owner'] = user['name']
                 pets.insert_one(pet_data)
-                
             flash('Logged in successfully!', 'success')
-            return redirect(url_for('dashboard'))
-            
+            return response
         flash('Invalid email or password!', 'danger')
-    
     return render_template('login.html')
 
+# Logout – clear the JWT cookies.
 @app.route('/logout')
 def logout():
-    session.clear()
-    return redirect(url_for('home'))
+    response = redirect(url_for('home'))
+    unset_jwt_cookies(response)
+    return (response)
 
 @app.route('/pet_info', methods=['GET', 'POST'])
 def pet_info():
@@ -560,7 +585,230 @@ def services():
 
 @app.route('/community')
 def community():
-    return render_template('community.html')
+    sort_option = request.args.get('sort', 'newest')
+    category_filter = request.args.get('category', None)
+    location_filter = request.args.get('location', 'worldwide')
+    animal_filter = request.args.get('animal_filter', None)
+    
+    query = {"parent": None}
+    if location_filter != 'worldwide':
+        query["location"] = location_filter
+    if category_filter:
+        query["category"] = category_filter
+    if animal_filter:
+        query["animal_tags"] = animal_filter
+    
+    posts = list(db.posts.find(query))
+    if sort_option == 'newest':
+        posts.sort(key=lambda x: x.get('timestamp', datetime.min), reverse=True)
+    elif sort_option == 'oldest':
+        posts.sort(key=lambda x: x.get('timestamp', datetime.max))
+    elif sort_option == 'most_liked':
+        posts.sort(key=lambda x: x.get('likes', 0), reverse=True)
+    
+    categories = db.posts.distinct("category")
+    current_user = get_current_user()
+    
+    return render_template(
+        'community.html',
+        posts=posts,
+        current_user=current_user,
+        sort_option=sort_option,
+        category_filter=category_filter,
+        location_filter=location_filter,
+        animal_filter=animal_filter,
+        categories=categories,
+        available_locations=available_locations,
+        available_animal_tags=available_animal_tags
+    )
+
+
+@app.route('/create_post', methods=['POST'])
+def create_post():
+    title = request.form.get('title')
+    content = request.form.get('content')
+    category = request.form.get('category', 'general')
+    animal_tags = request.form.get('animal_tags')
+    if animal_tags:
+        animal_tags = [tag.strip() for tag in animal_tags.split(',')]
+    else:
+        pet_type = request.form.get('pet_type', 'general')
+        pet_breed = request.form.get('pet_breed', None)
+        if pet_breed:
+            animal_tags = [pet_type, pet_breed]
+        else:
+            animal_tags = [pet_type]
+    
+    current_user = get_current_user()
+    
+    if title and content:
+        post = {
+            "_id": str(uuid.uuid4()),
+            "title": title,
+            "content": content,
+            "user": current_user['username'],
+            "location": current_user.get('location', 'Unknown'),
+            "email": current_user.get('email', ''),
+            "timestamp": datetime.utcnow(),
+            "likes": 0,
+            "category": category,
+            "animal_tags": animal_tags,
+            "parent": None,
+            "liked_by": [],
+            "avatar_color": current_user.get('avatar_color', '#4e73df')
+        }
+        db.posts.insert_one(post)
+        flash('Your post has been created successfully!', 'success')
+    else:
+        flash('Both title and content are required.', 'error')
+    location_filter = request.args.get('location', 'worldwide')
+    return redirect(url_for('community', location=location_filter))
+
+
+@app.route('/create_reply', methods=['POST'])
+def create_reply():
+    content = request.form.get('content')
+    parent_id = request.form.get('parent_id')
+    if not content:
+        flash('Reply content cannot be empty.', 'error')
+        return redirect(request.referrer or url_for('community'))
+    if not parent_id:
+        flash('Parent post not specified.', 'error')
+        return redirect(request.referrer or url_for('community'))
+    parent_post = db.posts.find_one({"_id": parent_id})
+    if not parent_post:
+        flash('Parent post not found.', 'error')
+        return redirect(request.referrer or url_for('community'))
+    
+    current_user = get_current_user()
+    
+    reply = {
+        "_id": str(uuid.uuid4()),
+        "content": content,
+        "user": current_user['username'],
+        "location": current_user.get('location', 'Unknown'),
+        "email": current_user.get('email', ''),
+        "timestamp": datetime.utcnow(),
+        "likes": 0,
+        "category": parent_post.get('category', 'general'),
+        "parent": parent_id,
+        "liked_by": [],
+        "avatar_color": current_user.get('avatar_color', '#4e73df')
+    }
+    db.posts.insert_one(reply)
+    flash('Your reply has been posted.', 'success')
+    return redirect(request.referrer or url_for('community') + f"#post-{reply['_id']}")
+
+
+@app.route('/like_post', methods=['POST'])
+def like_post():
+    post_id = request.form.get('post_id')
+    if not post_id:
+        return jsonify({"error": "Post ID not provided"}), 400
+    post = db.posts.find_one({"_id": post_id})
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+    current_user = get_current_user()
+    user_id = current_user['username']
+    if user_id in post.get('liked_by', []):
+        db.posts.update_one({"_id": post_id}, {"$inc": {"likes": -1}, "$pull": {"liked_by": user_id}})
+    else:
+        db.posts.update_one({"_id": post_id}, {"$inc": {"likes": 1}, "$push": {"liked_by": user_id}})
+    updated_post = db.posts.find_one({"_id": post_id})
+    return jsonify({"likes": updated_post.get("likes", 0), "liked": user_id in updated_post.get('liked_by', [])})
+
+
+@app.route('/search', methods=['GET'])
+def search_posts():
+    query_text = request.args.get('q', '')
+    location_filter = request.args.get('location', 'worldwide')
+    animal_filter = request.args.get('animal_filter', None)
+    if not query_text:
+        return redirect(url_for('community', location=location_filter))
+    search_conditions = {
+        "$or": [
+            {"content": {"$regex": query_text, "$options": "i"}},
+            {"user": {"$regex": query_text, "$options": "i"}},
+            {"category": {"$regex": query_text, "$options": "i"}}
+        ]
+    }
+    if location_filter != 'worldwide':
+        search_query = {"$and": [{"location": location_filter}, search_conditions]}
+    else:
+        search_query = search_conditions
+    if animal_filter:
+        search_query["animal_tags"] = animal_filter
+    search_results = list(db.posts.find(search_query))
+    categories = db.posts.distinct("category")
+    current_user = get_current_user()
+    return render_template(
+        'community.html',
+        posts=search_results,
+        current_user=current_user,
+        sort_option='relevance',
+        search_query=query_text,
+        category_filter=None,
+        location_filter=location_filter,
+        animal_filter=animal_filter,
+        categories=categories,
+        available_locations=available_locations,
+        available_animal_tags=available_animal_tags
+    )
+
+
+@app.route('/delete_post/<post_id>', methods=['POST'])
+def delete_post(post_id):
+    location_filter = request.args.get('location', 'worldwide')
+    def find_all_replies(pid):
+        child_ids = [pid]
+        replies = list(db.posts.find({"parent": pid}))
+        for reply in replies:
+            child_ids.extend(find_all_replies(reply['_id']))
+        return child_ids
+    post_ids_to_delete = find_all_replies(post_id)
+    result = db.posts.delete_many({"_id": {"$in": post_ids_to_delete}})
+    if result.deleted_count > 0:
+        flash(f'Post and {result.deleted_count - 1} replies have been deleted.', 'success')
+    else:
+        flash('Post not found or could not be deleted.', 'error')
+    return redirect(url_for('community', location=location_filter))
+
+
+@app.route('/user_profile/<username>')
+def user_profile(username):
+    user_posts = list(db.posts.find({"user": username, "parent": None}))
+    user_posts.sort(key=lambda x: x.get('timestamp', datetime.min), reverse=True)
+    post_count = len(user_posts)
+    total_likes = sum(post.get('likes', 0) for post in db.posts.find({"user": username}))
+    reply_count = db.posts.count_documents({"user": username, "parent": {"$ne": None}})
+    current_user = get_current_user()
+    return render_template(
+        'user_profile.html',
+        profile=current_user,
+        posts=user_posts,
+        post_count=post_count,
+        reply_count=reply_count,
+        total_likes=total_likes,
+        available_locations=available_locations
+    )
+
+
+@app.route('/post/<post_id>')
+def view_post(post_id):
+    post = db.posts.find_one({"_id": post_id})
+    if not post:
+        flash("Post not found.", "error")
+        return redirect(url_for("community"))
+    def get_replies(pid):
+        replies = list(db.posts.find({"parent": pid}))
+        for reply in replies:
+            reply['replies'] = get_replies(reply['_id'])
+        replies.sort(key=lambda x: x.get('likes', 0), reverse=True)
+        return replies
+    post['replies'] = get_replies(post_id)
+    current_user = get_current_user()
+    return render_template('post_detail.html', post=post, current_user=current_user)
+
 
 @app.route('/ai_help', methods=['GET', 'POST'])
 def ai_help():

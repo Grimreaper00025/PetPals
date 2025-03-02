@@ -23,7 +23,7 @@
             </div>
             <div class="user-info">
                 {% if current_user and current_user.username != 'Guest' %}
-                <a href="{{ url_for('forum.user_profile', username=current_user.username) }}">
+                <a href="{{ url_for('user_profile', username=current_user.username) }}">
                     <i class="fas fa-user-circle"></i> {{ current_user.username }}
                 </a>
                 <a href="{{ url_for('logout') }}">Logout</a>
@@ -82,7 +82,7 @@
         </section>
 
         <section class="control-panel">
-            <form class="post-form" action="{{ url_for('forum.create_post') }}" method="post">
+            <form class="post-form" action="{{ url_for('create_post') }}" method="post">
                 <input type="text" name="title" placeholder="Post Title" required>
                 <textarea name="content" placeholder="Share your thoughts, questions, or advice..." required></textarea>
                 
@@ -122,15 +122,15 @@
             {% if posts %}
                 {% for post in posts %}
                 <div class="post" id="post-{{ post._id }}">
-                    <div class="post-header" onclick="window.location.href='{{ url_for('forum.view_post', post_id=post._id) }}'">
+                    <div class="post-header" onclick="window.location.href='{{ url_for('view_post', post_id=post._id) }}'">
                         <div class="post-info">
                             <h3 class="post-title">
-                                <a href="{{ url_for('forum.view_post', post_id=post._id) }}">{{ post.title }}</a>
+                                <a href="{{ url_for('view_post', post_id=post._id) }}">{{ post.title }}</a>
                             </h3>
                             <div class="post-metadata">
                                 <div class="post-user">
                                     <i class="fas fa-user" style="color: {{ post.avatar_color }}"></i>
-                                    <a href="{{ url_for('forum.user_profile', username=post.user) }}">{{ post.user }}</a>
+                                    <a href="{{ url_for('user_profile', username=post.user) }}">{{ post.user }}</a>
                                 </div>
                                 <div class="post-tags">
                                     {% if post.category %}
@@ -156,14 +156,14 @@
                             {% endif %}
                         </div>
                         <div class="post-actions">
-                            <button class="action-btn like-btn {% if current_user.username in post.liked_by %}active{% endif %}" onclick="likePost('{{ post._id }}')">
-                                <i class="far fa-heart"></i> <span id="like-count-{{ post._id }}">{{ post.likes }}</span>
+                            <button class="action-btn like-btn {% if current_user.username in post.liked_by %}active{% endif %}" id="like-btn-{{ post._id }}" onclick="likePost('{{ post._id }}')">
+                                <i class="{% if current_user.username in post.liked_by %}fas{% else %}far{% endif %} fa-heart"></i> <span id="like-count-{{ post._id }}">{{ post.likes }}</span>
                             </button>
-                            <button class="action-btn" onclick="sharePost('{{ post._id }}', event)">
+                            <button class="action-btn" id="share-btn-{{ post._id }}" onclick="sharePost('{{ post._id }}', event)">
                                 <i class="fas fa-share-alt"></i> Share
                             </button>
                             {% if current_user.username == post.user %}
-                            <form action="{{ url_for('forum.delete_post', post_id=post._id) }}" method="post" style="display: inline;">
+                            <form action="{{ url_for('delete_post', post_id=post._id) }}" method="post" style="display: inline;">
                                 <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this post?')">
                                     <i class="far fa-trash-alt"></i> Delete
                                 </button>
@@ -224,8 +224,8 @@
     <div class="toast" id="toast">Link copied to clipboard!</div>
 
     <script>
-        const forumHomeUrl = "{{ url_for('forum.forum_home') }}";
-        const forumLikeUrl = "{{ url_for('forum.like_post') }}";
+        var forumHomeUrl = "{{ url_for('community') }}";
+        var forumLikeUrl = "{{ url_for('like_post') }}";
     </script>
     <script src="{{ url_for('static', filename='js/forum.js') }}"></script>
 </body>

@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <!-- Header with navigation links for non-logged-in users -->
     <nav class="navbar">
       <div class="logo">
         <a href="{{ url_for('home') }}">
@@ -17,7 +16,7 @@
         </a>
       </div>
       <div class="user-info">
-        <a href="{{ url_for('forum.forum_home') }}">Forum</a>
+        <a href="{{ url_for('community') }}">Forum</a>
         <a href="{{ url_for('login') }}">Login</a>
         <a href="{{ url_for('signup') }}">Signup</a>
       </div>
@@ -93,7 +92,7 @@
             {% endfor %}
           </div>
           <div class="reply-form">
-            <form action="{{ url_for('forum.create_reply') }}" method="POST">
+            <form action="{{ url_for('create_reply') }}" method="POST">
               <input type="hidden" name="parent_id" value="{{ post._id }}">
               <textarea name="content" placeholder="Write your reply here..." required></textarea>
               <button type="submit" class="btn btn-secondary">Post Reply</button>
@@ -103,8 +102,7 @@
       </div>
     </div>
     <script>
-      // Set URL variable for post_detail.js
-      var postDetailLikeUrl = "{{ url_for('forum.like_post') }}";
+      var postDetailLikeUrl = "{{ url_for('like_post') }}";
     </script>
     <script src="{{ url_for('static', filename='js/post_detail.js') }}"></script>
   </body>
