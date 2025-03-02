@@ -41,22 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
     petCards.forEach(card => {
         card.addEventListener('click', function() {
             const petType = this.getAttribute('data-pet');
-            const petName = this.querySelector('.pet-name').textContent;
-            const petIconClass = this.querySelector('.pet-image i').className;
-            
-            // Set modal content
-            selectedPetElement.textContent = petName;
-            modalPetIcon.className = petIconClass;
-            
-            // Store selected pet in session storage for pet_info page
-            sessionStorage.setItem('selectedPet', petType);
-            sessionStorage.setItem('selectedPetName', petName);
-            
-            // Show modal with animation
-            modal.style.display = 'flex';
-            setTimeout(() => {
-                modal.style.opacity = '1';
-            }, 10);
+            // Redirect directly to the pet_info page with pet type as URL parameter
+            window.location.href = `/pet_info?pet_type=${petType}`;
         });
     });
     
