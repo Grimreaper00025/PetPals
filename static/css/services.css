@@ -395,3 +395,62 @@ a:focus, button:focus {
     outline: 3px solid var(--primary-light);
     outline-offset: 2px;
 }
+
+/* Fix for underlined navigation items */
+.sidebar-nav ul li a,
+.header-nav ul li a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Fix for thin navbar on services page */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem 1rem;
+}
+
+/* Ensure consistent header height across all pages */
+.page-header {
+    height: auto;
+    min-height: 70px;
+    background-color: var(--white);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* Make sure logo is properly displayed */
+.logo {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+}
+
+
+/* Ensure proper list styling for navigation */
+/* .header-nav ul,
+.sidebar-nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+} */
+
+.header-nav ul li {
+    margin-left: 1.5rem;
+}
+
+/* Ensure consistent navbar item appearance */
+.sidebar-nav ul li a{
+    padding: 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    /* align-items: center; */
+}
+.header-nav ul{
+    margin-top:  1rem;
+}
