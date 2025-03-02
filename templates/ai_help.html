@@ -18,6 +18,14 @@
 
 {% block content %}
 <!-- Background Animation -->
+<style>
+    .background-animation {
+        z-index: 1;
+    }   
+    .container{
+        z-index: 2;
+    }
+</style>
 <div class="background-animation">
     <div class="bubble bubble-1"></div>
     <div class="bubble bubble-2"></div>
@@ -27,6 +35,7 @@
     <div class="bubble bubble-6"></div>
     <div class="bubble bubble-7"></div>
     <div class="bubble bubble-8"></div>
+    <div class="stars-container"></div>
 </div>
 
 <div class="container">
@@ -64,7 +73,7 @@
             
             <div class="chat-input">
                 <textarea id="question-box" placeholder="Ask a question about pet care..." rows="2"></textarea>
-                <button id="submit-btn"><i class="fas fa-paper-plane"></i></button>
+                <button id="submit-btn" class="submit-button"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
