@@ -18,7 +18,10 @@
     <div class="app-container">
         <aside class="sidebar collapsed">
             <div class="sidebar-header">
-                <h1>PetCare</h1>
+                <div class="logo sidebar-logo">
+                    <span class="logo-text">Pet<span class="highlight">Pals</span></span>
+                    <i class="fas fa-paw logo-icon"></i>
+                </div>
                 <button class="menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -34,7 +37,7 @@
                     </li>
                     <li>
                         <a href="{{ url_for('services') }}">
-                            <span class="icon"><i class="fas fa-concierge-bell"></i></span>
+                            <span class="icon"><i class="fas fa-store"></i></span>
                             <span class="text">Services</span>
                         </a>
                     </li>
@@ -45,11 +48,18 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ url_for('market') }}">
+                            <span class="icon"><i class="fa-solid fa-cart-shopping"></i></span>
+                            <span class="text">Market</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ url_for('ai_help') }}">
                             <span class="icon"><i class="fas fa-robot"></i></span>
                             <span class="text">AI Help</span>
                         </a>
                     </li>
+                    
                 </ul>
             </nav>
             
@@ -68,11 +78,12 @@
            
 <header class="page-header">
     <div class="header-content">
-      <h1 class="site-title">PetPals</h1>
+        <div class="logo">
+            <span class="logo-text">Pet<span class="highlight">Pals</span></span>
+            <i class="fas fa-paw logo-icon"></i>
+        </div>
       <nav class="header-nav">
         <ul>
-          <li><a href="{{ url_for('dashboard') }}">Home</a></li>
-          <li><a href="{{ url_for('market') }}">Market</a></li>
           <li><a href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
       </nav>
@@ -116,8 +127,10 @@
     });
 });
 
-    
+
     
     </script>
+    <script src="https://kit.fontawesome.com/64a95851be.js" crossorigin="anonymous"></script>
+
 </body>
 </html>
