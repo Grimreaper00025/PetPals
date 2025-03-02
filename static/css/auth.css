@@ -531,7 +531,7 @@ main {
     text-decoration: underline;
 }
 
-/* Alert messages */
+/* Alert messages
 .alert {
     padding: 1rem;
     border-radius: 10px;
@@ -561,7 +561,7 @@ main {
     background-color: rgba(220, 53, 69, 0.1);
     border-left: 4px solid var(--danger);
     color: var(--danger);
-}
+} */
 
 /* Footer */
 footer {
@@ -646,24 +646,3 @@ footer {
     left: 20px;
 }
 
-/* Confetti animation for successful login/signup */
-.confetti {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: var(--primary);
-    opacity: 0.8;
-    border-radius: 50%;
-    animation: confetti-fall 5s ease-in infinite;
-}
-
-@keyframes confetti-fall {
-    0% {
-        transform: translateY(-100vh) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
-    }
-}

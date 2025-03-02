@@ -601,8 +601,6 @@ def services():
         {"name": "Pet Boarding", "icon": "fa-home", "description": "Kennels, pet hotels, in-home sitters, and doggy daycare"},
         {"name": "Dog Parks", "icon": "fa-tree", "description": "Dog parks, pet-friendly restaurants, cafes, and hotels"},
         {"name": "Pet Adoption", "icon": "fa-heart", "description": "Shelters, breed-specific rescues, and foster organizations"},
-        {"name": "Pet Transportation", "icon": "fa-car", "description": "Pet taxis, pet-friendly rideshare, and transport services"},
-        {"name": "Pet Specialty Services", "icon": "fa-camera", "description": "Pet photography, massage therapy, and hydrotherapy"}
     ]
     return render_template("services.html", services=services_list)
 
