@@ -48,7 +48,7 @@
             <h2>Order Summary</h2>
             <div class="summary-line">
                 <span>Subtotal:</span>
-                <span>${{ total|round(2) }}</span>
+                <span id="subtotal">$0.00</span>
             </div>
             <div class="summary-line">
                 <span>Shipping:</span>
@@ -56,12 +56,16 @@
             </div>
             <div class="summary-line total-line">
                 <span>Total:</span>
-                <span>${{ (total + 5.99)|round(2) }}</span>
+                <span id="total">$0.00</span>
             </div>
             <a href="{{ url_for('checkout') }}" class="checkout-btn">Proceed to Checkout</a>
             <a href="{{ url_for('clear_cart') }}" class="clear-cart-btn">Clear Cart</a>
         </div>
     </div>
+    
+    
+       
+            
 </div>
 {% else %}
 <div class="empty-cart">
@@ -170,6 +174,51 @@
             });
         });
     });
+    // total calculation fix
+    document.addEventListener('DOMContentLoaded', function() {
+            // Calculate subtotal and total on page load
+            calculateCartTotals();
+            
+            // Function to calculate cart totals
+            function calculateCartTotals() {
+                let subtotal = 0;
+                const shipping = 5.99;
+                
+                // Get all cart items and calculate subtotal
+                document.querySelectorAll('.cart-item-container').forEach(item => {
+                    const priceText = item.querySelector('.cart-item-price').textContent;
+                    const price = parseFloat(priceText.replace('$', ''));
+                    const quantity = parseInt(item.querySelector('.quantity').textContent);
+                    
+                    // Calculate item total
+                    const itemTotal = price * quantity;
+                    subtotal += itemTotal;
+                    
+                    // Update the item total display
+                    item.querySelector('.item-total').textContent = `Item Total: $${itemTotal.toFixed(2)}`;
+                });
+                
+                // Update the subtotal and total in the summary
+                document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+                document.getElementById('total').textContent = `$${(subtotal + shipping).toFixed(2)}`;
+            }
+            
+            // Add this function call to your existing event handlers
+            const quantityForms = document.querySelectorAll('.quantity-controls form');
+            quantityForms.forEach(form => {
+                const originalSubmitHandler = form.onsubmit;
+                form.onsubmit = function(e) {
+                    // Call original handler if it exists
+                    if (originalSubmitHandler) {
+                        originalSubmitHandler(e);
+                    }
+                    
+                    // Recalculate totals after quantity changes
+                    setTimeout(calculateCartTotals, 100);
+                };
+            });
+        });
+  
 </script>
 
 
