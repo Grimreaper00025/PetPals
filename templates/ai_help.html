@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pet Care Assistant</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_help.css') }}">
+    
+    
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation">
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
+        <div class="bubble bubble-4"></div>
+        <div class="bubble bubble-5"></div>
+        <div class="bubble bubble-6"></div>
+        <div class="bubble bubble-7"></div>
+        <div class="bubble bubble-8"></div>
+    </div>
+
+    <div class="header">
+        <h2><a href="/" style="text-decoration: none;"><span style="color: black;">Pet</span><span style="color: #6c63ff;">Pals</span> <i class="fas fa-paw" style="color: #6c63ff;"></i></a></h2>
+        <div class="nav-links">
+            <a href="/dashboard"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
+            <a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="chat-container">
+            <div id="chat-messages" class="chat-messages">
+                <div class="welcome-message">
+                    <i class="fas fa-robot" style="font-size: 30px; color: var(--primary); margin-bottom: 10px;"></i>
+                    <p>Hello! I'm your PetPals AI assistant. How can I help with your pet care questions today?</p>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <textarea id="question-box" placeholder="Ask a question about pet care..." rows="2"></textarea>
+                <button id="submit-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+          
+    </div>
+    
+    <script>
+        $(document).ready(function() {
+    // Create ripple effects for bubbles
+    // Replace your existing createRipples function with this one
+function createRipples() {
+    // Initial ripples for all bubbles
+    $('.bubble').each(function() {
+        createRippleForBubble($(this));
+    });
+    
+    // Set up regular ripple creation for all bubbles
+    setInterval(function() {
+        $('.bubble').each(function() {
+            // 50% chance to create a ripple for each bubble on each interval
+            if (Math.random() > 0.5) {
+                createRippleForBubble($(this));
+            }
+        });
+    }, 2000); // Every 2 seconds check all bubbles
+}
+
+// Add this new helper function
+function createRippleForBubble(bubble) {
+    const bubbleWidth = bubble.width();
+    const bubbleHeight = bubble.height();
+    
+    const ripple = $('<div class="ripple"></div>');
+    ripple.css({
+        width: bubbleWidth,
+        height: bubbleHeight,
+        left: 0,
+        top: 0
+    });
+    
+    bubble.append(ripple);
+    
+    // Remove ripple after animation completes
+    setTimeout(function() {
+        ripple.remove();
+    }, 3000);
+}
+
+    
+    // Add dynamic bubble creation
+    function addRandomBubble() {
+        const colors = [
+            'var(--bubble-red)', 
+            'var(--bubble-blue)', 
+            'var(--bubble-green)', 
+            'var(--bubble-yellow)', 
+            'var(--bubble-purple)'
+        ];
+        
+        const size = Math.floor(Math.random() * 150) + 100; // Random size between 100-250px
+        const posX = Math.floor(Math.random() * 100); // Random X position
+        const posY = Math.floor(Math.random() * 100); // Random Y position
+        const colorIndex = Math.floor(Math.random() * colors.length);
+        const animDelay = Math.floor(Math.random() * 10);
+        
+        const bubble = $('<div class="bubble"></div>');
+        bubble.css({
+            width: size + 'px',
+            height: size + 'px',
+            left: posX + '%',
+            top: posY + '%',
+            background: colors[colorIndex],
+            animationDelay: animDelay + 's',
+            opacity: 0
+        });
+        
+        $('.background-animation').append(bubble);
+        
+        // Fade in the bubble
+        setTimeout(function() {
+            bubble.css('opacity', 1);
+        }, 100);
+        
+        // Remove bubble after some time
+        setTimeout(function() {
+            bubble.css('opacity', 0);
+            setTimeout(function() {
+                bubble.remove();
+            }, 1000);
+        }, 30000 + Math.random() * 15000); // Remove after 30-45 seconds
+    }
+    
+    // Initialize ripples
+    createRipples();
+    
+    // Add new bubbles periodically
+    setInterval(addRandomBubble, 8000); // Add a new bubble every 8 seconds
+    
+    // Add a few random bubbles on load
+    for (let i = 0; i < 3; i++) {
+        setTimeout(addRandomBubble, i * 2000);
+    }
+    
+    $(document).ready(function() {
+    // Initialize conversation history
+    let conversationHistory = [];
+    let typingInProgress = false;
+    
+    // Function to add a message to the chat
+    function addMessage(content, isUser) {
+        const messageDiv = $('<div class="message"></div>');
+        messageDiv.addClass(isUser ? 'user-message' : 'assistant-message');
+        
+        // Format content with paragraphs
+        const formattedContent = content.split('\n\n').map(para => 
+            `<p>${para.replace(/\n/g, '<br>')}</p>`
+        ).join('');
+        
+        messageDiv.html(formattedContent);
+        $('#chat-messages').append(messageDiv);
+        
+        // Scroll to bottom
+        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+    }
+    
+    // Function to type out a message character by character
+    function typeMessage(message, element, speed = 10) {
+        let i = 0;
+        element.html('');
+        typingInProgress = true;
+        
+        // Format the message with paragraphs first
+        let paragraphs = message.split('\n\n');
+        let currentParagraph = $('<p></p>');
+        element.append(currentParagraph);
+        
+        function typeNextChar() {
+            // If typing was stopped or we've typed the entire message, stop
+            if (!typingInProgress || i >= message.length) {
+                typingInProgress = false;
+                return;
+            }
+            
+            // Check for paragraph breaks
+            if (i > 0 && i < message.length - 1 && message.substr(i-1, 2) === '\n\n') {
+                currentParagraph = $('<p></p>');
+                element.append(currentParagraph);
+                i++; // Skip the second newline
+            }
+            // Check for line breaks within paragraphs
+            else if (message[i] === '\n') {
+                currentParagraph.append('<br>');
+                i++;
+                setTimeout(typeNextChar, speed);
+                return;
+            }
+            
+            // Add the next character
+            currentParagraph.append(message[i]);
+            i++;
+            
+            // Schedule the next character
+            setTimeout(typeNextChar, speed);
+        }
+        
+        // Start typing
+        typeNextChar();
+        
+        // Add a click handler to stop typing and show full message
+        element.on('click', function() {
+            if (typingInProgress) {
+                typingInProgress = false;
+                
+                // Show the full formatted message
+                element.html('');
+                message.split('\n\n').forEach(para => {
+                    element.append(`<p>${para.replace(/\n/g, '<br>')}</p>`);
+                });
+            }
+        });
+    }
+    
+    // Function to show typing indicator
+    function showTypingIndicator() {
+        const indicator = $(`
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `);
+        $('#chat-messages').append(indicator);
+        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+        return indicator;
+    }
+    
+    // Handle form submission
+    $('#submit-btn').click(function() {
+        sendMessage();
+    });
+    
+    // Also trigger send on Enter key (but Shift+Enter for new line)
+    $('#question-box').keydown(function(e) {
+        if (e.keyCode === 13 && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    function sendMessage() {
+        const question = $('#question-box').val().trim();
+        
+        if (question === '') {
+            // Create and show alert
+            const alert = $('<div class="alert alert-danger">Please enter a question</div>');
+            alert.insertBefore('.chat-container');
+            
+            setTimeout(function() {
+                alert.fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 3000);
+            
+            return;
+        }
+        
+        // Add user message to chat
+        addMessage(question, true);
+        
+        // Clear input
+        $('#question-box').val('');
+        
+        // Show typing indicator
+        const typingIndicator = showTypingIndicator();
+        
+        // Send AJAX request
+        $.ajax({
+            url: '/ai_help',
+            type: 'POST',
+            data: {
+                'question': question,
+                'conversation_history': JSON.stringify(conversationHistory)
+            },
+            success: function(response) {
+                // Remove typing indicator
+                typingIndicator.remove();
+                
+                // Check if response has raw_schedule (success) or error
+                if (response.raw_schedule) {
+                    // Create an empty message div
+                    const messageDiv = $('<div class="message assistant-message"></div>');
+                    $('#chat-messages').append(messageDiv);
+                    
+                    // Type out the message
+                    typeMessage(response.raw_schedule, messageDiv);
+                    
+                    // Scroll to bottom as typing happens
+                    function scrollToBottom() {
+                        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+                        
+                        // Continue scrolling while typing is happening
+                        if (typingInProgress) {
+                            setTimeout(scrollToBottom, 100);
+                        }
+                    }
+                    scrollToBottom();
+                    
+                    // Update conversation history
+                    if (response.conversation_history) {
+                        conversationHistory = response.conversation_history;
+                    } else {
+                        // Fallback if history not returned
+                        conversationHistory.push({"role": "user", "content": question});
+                        conversationHistory.push({"role": "assistant", "content": response.raw_schedule});
+                    }
+                } else if (response.error) {
+                    const messageDiv = $('<div class="message assistant-message"></div>');
+                    $('#chat-messages').append(messageDiv);
+                    typeMessage('Error: ' + response.error, messageDiv);
+                } else {
+                    const messageDiv = $('<div class="message assistant-message"></div>');
+                    $('#chat-messages').append(messageDiv);
+                    typeMessage(response, messageDiv);
+                }
+            },
+            error: function(xhr, status, error) {
+                // Remove typing indicator
+                typingIndicator.remove();
+                
+                // Show error message
+                const messageDiv = $('<div class="message assistant-message"></div>');
+                $('#chat-messages').append(messageDiv);
+                typeMessage('Sorry, there was an error processing your request: ' + error, messageDiv);
+                
+                // Create and show alert
+                const alert = $('<div class="alert alert-danger">Error: ' + error + '</div>');
+                alert.insertBefore('.chat-container');
+                
+                setTimeout(function() {
+                    alert.fadeOut(function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+            }
+        });
+    }
+});
+
+
+});
+</script>

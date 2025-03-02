@@ -1,0 +1,606 @@
+:root {
+    --primary: #6c63ff;
+    --primary-light: #8b85ff;
+    --primary-dark: #4e46e5;
+    --secondary: #ff6584;
+    --secondary-light: #ff85a1;
+    --text-dark: #333;
+    --text-light: #666;
+    --white: #fff;
+    --gray-light: #f8f9fa;
+    --gray: #e9ecef;
+    --success: #28a745;
+    --danger: #dc3545;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --animation-speed: 0.3s;
+    
+    /* Bubble colors */
+    --bubble-red: rgba(255, 101, 132, 0.2);
+    --bubble-blue: rgba(108, 99, 255, 0.2);
+    --bubble-green: rgba(102, 204, 153, 0.2);
+    --bubble-yellow: rgba(255, 221, 100, 0.15);
+    --bubble-purple: rgba(170, 102, 204, 0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-dark);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Background Animation */
+.background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.bubble {
+    position: absolute;
+    border-radius: 50%;
+    animation: float 20s infinite;
+    transition: all 0.3s ease-in-out;
+}
+
+.bubble-1 {
+    width: 250px;
+    height: 250px;
+    left: -100px;
+    top: 10%;
+    background: var(--bubble-blue);
+    animation-delay: 0s;
+}
+
+.bubble-2 {
+    width: 200px;
+    height: 200px;
+    right: -80px;
+    top: 40%;
+    background: var(--bubble-red);
+    animation-delay: 2s;
+}
+
+.bubble-3 {
+    width: 300px;
+    height: 300px;
+    left: 35%;
+    top: 60%;
+    background: var(--bubble-yellow);
+    animation-delay: 4s;
+}
+
+.bubble-4 {
+    width: 180px;
+    height: 180px;
+    right: 10%;
+    top: 10%;
+    background: var(--bubble-green);
+    animation-delay: 6s;
+}
+
+.bubble-5 {
+    width: 220px;
+    height: 220px;
+    left: 15%;
+    top: 30%;
+    background: var(--bubble-purple);
+    animation-delay: 8s;
+}
+
+.bubble-6 {
+    width: 150px;
+    height: 150px;
+    right: 25%;
+    top: 70%;
+    background: var(--bubble-blue);
+    animation-delay: 10s;
+}
+
+.bubble-7 {
+    width: 270px;
+    height: 270px;
+    left: 60%;
+    top: 20%;
+    background: var(--bubble-green);
+    animation-delay: 12s;
+}
+
+.bubble-8 {
+    width: 190px;
+    height: 190px;
+    right: 40%;
+    bottom: 10%;
+    background: var(--bubble-red);
+    animation-delay: 14s;
+}
+
+@keyframes float {
+    0% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+    100% { transform: translateY(0) rotate(0); }
+}
+
+/* Header */
+.header {
+    background-color: Transparent;
+    padding: 15px 10%; /* Increased padding on sides */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(5px); /* Adds a nice blur effect */
+}
+
+.header h2 {
+    margin: 0;
+}
+
+.header a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+    transition: all var(--animation-speed) ease;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+/* Main Container */
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-lg);
+}
+
+h1 {
+    text-align: center;
+    color: #4a4a4a;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+}
+
+.input-container, .output-container {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--gray);
+    border-radius: 10px;
+    resize: vertical;
+    font-size: 16px;
+    min-height: 100px;
+    box-sizing: border-box;
+    transition: all var(--animation-speed) ease;
+    background: var(--gray-light);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+}
+
+#answer-box {
+    min-height: 200px;
+    background-color: var(--gray-light);
+}
+
+/* Button Styles */
+button {
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all var(--animation-speed) ease;
+    box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(108, 99, 255, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(108, 99, 255, 0.3);
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.6s ease;
+}
+
+button:hover::after {
+    left: 100%;
+}
+
+/* Loading Animation */
+.loading-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(249, 249, 249, 0.7);
+}
+
+.paw-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-icon {
+    font-size: 60px;
+    color: var(--primary);
+    animation: pulse 1.5s infinite ease-in-out;
+    position: absolute;
+    z-index: 2;
+}
+
+.wave {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    opacity: 0;
+    animation: wave 1.5s infinite ease-out;
+}
+
+.wave:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.wave:nth-child(3) {
+    animation-delay: 1s;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0.8);
+    }
+}
+
+@keyframes wave {
+    0% {
+        width: 60px;
+        height: 60px;
+        opacity: 0.8;
+    }
+    100% {
+        width: 120px;
+        height: 120px;
+        opacity: 0;
+    }
+}
+
+/* Update this in your CSS section */
+.ripple {
+position: absolute;
+border-radius: 50%;
+transform: scale(0);
+animation: ripple 3s linear infinite;
+background: rgba(255, 255, 255, 0.7); /* Increased opacity from 0.4 to 0.7 */
+border: 2px solid rgba(255, 255, 255, 0.9); /* Added border for more visibility */
+pointer-events: none; /* Ensures ripples don't interfere with interactions */
+}
+
+@keyframes ripple {
+0% {
+transform: scale(0);
+opacity: 0.8; /* Increased from 0.5 to 0.8 */
+}
+100% {
+transform: scale(1);
+opacity: 0;
+}
+}
+
+
+/* Alert messages */
+.alert {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid var(--success);
+    color: var(--success);
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left: 4px solid var(--danger);
+    color: var(--danger);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--white);
+    color: var(--text-light);
+    position: relative;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        margin: 20px 15px;
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .header {
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .nav-links {
+        margin-top: 10px;
+    }
+    
+    .nav-links a {
+        margin-left: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 12px;
+    }
+    
+    textarea {
+        min-height: 80px;
+    }
+    
+    #answer-box {
+        min-height: 150px;
+    }
+    
+    button {
+        width: 100%;
+    }
+}
+
+/* Ripple effect for bubbles */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 3s linear infinite;
+    background: rgba(255, 255, 255, 0.4);
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+.nav-links a {
+    color: black;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+    transition: all var(--animation-speed) ease;
+}
+
+.nav-links a i {
+    margin-right: 5px;
+}
+
+/* Add these styles to your CSS */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: var(--gray-light);
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome-message {
+    background-color: rgba(108, 99, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+    align-self: center;
+    max-width: 80%;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+    padding: 12px 15px;
+    border-radius: 18px;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-message {
+    align-self: flex-end;
+    background-color: var(--primary);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.assistant-message {
+    align-self: flex-start;
+    background-color: white;
+    border: 1px solid var(--gray);
+    border-bottom-left-radius: 5px;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background-color: white;
+    border-top: 1px solid var(--gray);
+}
+
+.chat-input textarea {
+    flex: 1;
+    border-radius: 20px;
+    padding: 12px 15px;
+    resize: none;
+    min-height: auto;
+}
+
+.chat-input button {
+    margin-left: 10px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.chat-input button i {
+    font-size: 18px;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    background-color: white;
+    border: 1px solid var(--gray);
+    border-radius: 18px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    animation: typing 1s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+    margin-right: 0;
+}
+
+@keyframes typing {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
+
+
